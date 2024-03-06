@@ -20,6 +20,7 @@ docker rm $(docker ps -a -q -f status=exited | deletes all containers with exite
 docker container prune | same as command above for later versions of docker
 docker run --rm | automatically deletes container once it's exited
 docker rmi | delete images
+docker run -d -P --name <wechoosethisname> <image> | detach terminal and publish all exposed ports
 
 ## Terminology
 Terminology | Definition
@@ -29,6 +30,10 @@ Containers | created from images and used to run application
 Docker Daemon | background service running on the host that manages building, running, and distributing Docker containers
 Docker Client | command line tool allowing user to interact with the daemon
 Docker Hub | registry of Docker images
+Detached mode | container continues to run in the background even if the terminal is closed
+Exposed ports | allows making network services running inside a container accessible outside or to other containers
+
+## Other concepts
 
 
 
