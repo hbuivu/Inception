@@ -33,7 +33,26 @@ Docker Hub | registry of Docker images
 Detached mode | container continues to run in the background even if the terminal is closed
 Exposed ports | allows making network services running inside a container accessible outside or to other containers
 
-## Other concepts
+## Docker Images
+* basis of containers
+* use `docker images` command to see list of all available images
+* image is kind of like a git repository - they can be committed with changes and there could be multiple versions. If no version number is specified, the default is latest
+* to pull a specific version of ubuntu image: `docker pull ubuntu:18.04'
+* we can pull docker images form registry or create our own
+  * use `docker search` in command line to look for specific images
+* There are different types of images
+  * **base:** has no parent, usually has an OS like ubuntu, busybox, or debian
+  * **child:** built on base images iwth additional functionality
+  * **official:** can be both base and child; images that officially maintained and supported by docker
+  * **user:** can be both base and child; images created and shared by users. typically formatted as `user/image-name`
+
+## Dockerfile
+* simple text file that contains a list of commands that Docker client calls while creating an image
+* automates image creation process
+* similar to linux commands
+
+`#specify base image  
+FROM python:3.8`
 
 
 
