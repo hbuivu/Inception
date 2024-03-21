@@ -16,7 +16,7 @@ docker ps -a | shows all container that we had already run
 docker run -it | run multiple commands inside container
 docker run --help | see list of run flags
 docker rm <containerID1, containerID2, ...> | delete containers after use; you will seee the ID echoed back
-docker rm $(docker ps -a -q -f status=exited | deletes all containers with exited status
+docker rm $(docker ps -a -q -f status=exited) | deletes all containers with exited status
 docker container prune | same as command above for later versions of docker
 docker run --rm | automatically deletes container once it's exited
 docker rmi | delete images
@@ -51,8 +51,47 @@ Exposed ports | allows making network services running inside a container access
 * automates image creation process
 * similar to linux commands
 
-`#specify base image  
-FROM python:3.8`
+```
+# specify base image  
+FROM python:3.8
+
+# set a directory for the app
+WORKDIR /usr/src/app
+
+# copy all the files to the container
+COPY . .
+
+# install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# define the port number the container should expose
+EXPOSE 5000
+
+# run the command
+CMD ["python", "./app.py"]
+```
+
+## Deploying application
+### Docker push
+* publish image on a registry
+* docker push username/file
+* AWS Beanstalk is a PaaS that can help to scale, monitor, and update your app
+
+## Multi-Container Environments
+* There is usually a database or storage associated with apps (see Redis and Memcached)
+* keep separate containers for separate services
+* cURL request - a command-line tool for transferring data with URLs. For example, curl https:://example.com will send and HTTP GET request to the provided url and print response to the terminal
+* Must connect containers to each other
+
+### Docker Network
+* `docker container ls` (same as `docker ps`) -> see container id and information
+* docker creates three automatic networks
+	* bridge -> this is the default network in which containers are run
+	* host
+	* none
+	* we can inspect the network with `docker network inspect bridge`
+	
+
 
 
 
