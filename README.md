@@ -89,7 +89,39 @@ CMD ["python", "./app.py"]
 	* bridge -> this is the default network in which containers are run
 	* host
 	* none
-	* we can inspect the network with `docker network inspect bridge`
+	* we can inspect the network with `docker network inspect <network name>`
+	* use IP address given here to allow two containers to talk to each other
+* We need to isolate our network (since bridge is shared by every container)
+	* use `docker network` command to create our own network
+	* `docker network create <name>`
+	* creates a new bridge network
+		* uses a software bridge - containers connected to same bridge network can communicate
+		* isolated from containers not connected to bridge network
+		* Docker bridge driver automatically installs rules in host machine so that containers on different bridge networks cannot communicate directly with each other
+* launch containers inside network using `--net` flag
+	* don't forget to stop and remove other container so that it can be launched in new network
+	* containers can also resolve a container name to an IP address - called automatic service discovery
+
+## Docker Compose
+* A tool for defining and running multi-container Docker applications  
+* provides a config file called docker-compose.yml to be used to bring up an applicatin and the suite of services it dpeends on with just one command
+* A YAML file can contain:
+	* version
+	* services:
+		* image -> ALWAYS REQUIRED
+		* container_name
+		* environment
+		* ports
+		* volumes
+		* command
+		* depends_on
+		* ports
+	* volumes
+* Compose will also create the network automatically
+
+		
+		 
+
 	
 
 
