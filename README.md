@@ -1,9 +1,13 @@
 # Inception
 ## What's Docker?
 * A tool that allows developers to deploy applications in a sandbox (containers) to run on the host operating system
-* Works kind of like a virtual machine but has less overhead
+* Works kind of like a virtual machine but has less overhead. It occupies less memory space, has quicker bootup, is easy to scale, and volume storage can be shared across host and the containers
 * allows users to package an app with all dependencies into a standardized unit for software development
 * container-based applications can be deployed easily and consistently, and can be run anywhere
+
+![Alt text](image.png)
+
+![Alt text](image-1.png)
 
 ## Basic Commands
 Command | Description
