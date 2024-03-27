@@ -6,7 +6,7 @@
 * container-based applications can be deployed easily and consistently, and can be run anywhere
 
 ### Architectural difference between Docker and VM
-![Alt text](image-2.png)
+![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)
 1. Infrastructure - physical machine that app is running on like CPU, hard disk, etc
 2. Host Operating System - computer OS
 3. Docker - builds and runs the app for you
