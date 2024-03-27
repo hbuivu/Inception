@@ -5,16 +5,30 @@
 * allows users to package an app with all dependencies into a standardized unit for software development
 * container-based applications can be deployed easily and consistently, and can be run anywhere
 
-![Alt text](image.png)
+### Architectural difference between Docker and VM
+![Alt text](image-2.png)
+1. Infrastructure - physical machine that app is running on like CPU, hard disk, etc
+2. Host Operating System - computer OS
+3. Docker - builds and runs the app for you
+4. App - individual containers all running on one network (or if you have more than one type of app, multiple networks)
 
 ![Alt text](image-1.png)
+1. Infrastructure - physical machine that app is running on like CPU, hard disk, etc
+2. Hypervisor - software that creates and manages VMs
+3. Each VM has it's own app and guest operating system
+
+### How Docker works
+1. Write a Dockerfile to build a Docker image
+2. `docker build` -> Docker daemon reads instructions in Dockerfile and builds the image
+3. `docker run` -> Docker daemon creates a container from image and runs app inside container
+4. Docker can view, stop, and manage containers. We can also push Docker image to a registry to share with others
 
 ## Basic Commands
 Command | Description
 :----------- | :-------------
-docker pull <image> | fetches image from Docker registry
+docker pull `<image>` | fetches image from Docker registry
 docker images | see list of all images on your system
-docker run <image> <commands> | run a docker container based on image with some command
+docker run `<image> <commands>` | run a docker container based on image with some command
 docker ps | show all containers currently running
 docker ps -a | shows all container that we had already run
 docker run -it | run multiple commands inside container
