@@ -6,17 +6,17 @@
 * container-based applications can be deployed easily and consistently, and can be run anywhere
 
 ### Architectural difference between Docker and VM
-![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)
+**DOCKER**  
 1. Infrastructure - physical machine that app is running on like CPU, hard disk, etc
 2. Host Operating System - computer OS
 3. Docker - builds and runs the app for you
 4. App - individual containers all running on one network (or if you have more than one type of app, multiple networks)
-
-![Alt text](image-1.png)
+![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)
+**VM**  
 1. Infrastructure - physical machine that app is running on like CPU, hard disk, etc
 2. Hypervisor - software that creates and manages VMs
 3. Each VM has it's own app and guest operating system
-
+![Alt text](image-1.png)
 ### How Docker works
 1. Write a Dockerfile to build a Docker image
 2. `docker build` -> Docker daemon reads instructions in Dockerfile and builds the image
