@@ -12,6 +12,7 @@
 * Docker - builds and runs the app for you
 * App - individual containers all running on one network (or if you have more than one type of app, multiple networks)
 ![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)
+
 **VM**
 * Infrastructure - physical machine that app is running on like CPU, hard disk, etc
 * Hypervisor - software that creates and manages VMs
