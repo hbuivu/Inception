@@ -38,6 +38,7 @@ docker rmi | delete images
 docker stop | stop running container
 docker exec | execute a command in a running container
 docker logs | view logs for a container
+docker push | push Docker image to a registery
 
 ## Terminology
 Terminology | Definition
@@ -72,26 +73,54 @@ Exposed ports | allows making network services running inside a container access
 Terminology | Definition
 :----------- | :-------------
 ADD | Add local or remote files and directories to Docker image. Similar to copy, but it can copy files from a remote URL (which COPY cannot), automatically extract compressed files into destination directory, and allows specifying a URL where Docker will download the source and copy it into the image
-ARG	| Use build-time variables. ex: ARG VERSION = latest \ FROM nginx:$VERSION
+ARG	| Use build-time variables. Example: `ARG VERSION = latest \ FROM nginx:$VERSION`
 CMD	| Specify default commands to run when a container is started from an image. Syntax can be specified in shell form (CMD command param1 param2) or exec form (CMD ["executable", "param1", "param2"]). There can only be 1 CMD instruction in a Dockerfile
 COPY | Copy files and directories into the image. COPY `<source path in host> <destination path in image>`
 ENTRYPOINT | Specify default executable to be run when a container is started from image. Syntax: `ENTRYPOINT ["executable", "param1", "param2"]`. See below for more on difference between CMD and ENTRYPOINT
 ENV | Set environment variables. Syntax: `ENV key1=value1 \ key2=value2`
 EXPOSE | Describe which port(s) your application is listening on. It does not publish the ports
-FROM | Specify base image from which you're building your new image. Must be the first instruction in a Dockerfile and there can only be 1 instruction. Syntax: `FROM image_name[:tag] [AS name]`. Usually the tag denotes the version of the base image like `ubuntu:20.04` or `nginx:latest`
-HEALTHCHECK | Check a container's "health" on startup (is it running properly). Example: `HEALTHCHECK --interval=5s --timeout=3s \
-  CMD curl -f http://localhost/ || exit 1`
-LABEL | Add metadata to an image.
-MAINTAINER | Specify the author of an image.
-ONBUILD | Specify instructions for when the image is used in a build.
-RUN	| Execute build commands.
-SHELL | Set the default shell of an image.
-STOPSIGNAL | Specify the system call signal for exiting a container.
-USER | Set user and group ID.
-VOLUME | Create volume mounts.
-WORKDIR | Change working directory.
+FROM | Specify base image from which you're building your new image. Must be the first instruction in a Dockerfile. Syntax: `FROM image_name[:tag] [AS name]`. Usually the tag denotes the version of the base image like `ubuntu:20.04` or `nginx:latest`. Only one FROM instruction can be used in a Dockerfile except in the case of a multi-stage build
+HEALTHCHECK | Check a container's "health" on startup (is it running properly). Example: `HEALTHCHECK --interval=5s --timeout=3s \ CMD curl -f http://localhost/ || exit 1`
+LABEL | Add metadata to Docker image. Used for organizational purposes and can be viewed using `docker inspect`. Example: `LABEL maintainer="example@example.com" \ LABEL description="This is a sample Dockerfile"`
+MAINTAINER | Specify the author of an image. Generally, using LABEL to specify the maintainer is better. 
+ONBUILD | Specify instructions for when the image is used as a build (base for another image)
+RUN	| Execute commands during build process of Docker image. Each instruction creates a new layer in the image. Example: `RUN apt-get update && apt-get install -y curl` Since each command creates a layer, we can chain commands together using && to to minimize number of layers created
+SHELL | Set the default shell of an image. By default, Docker uses `/bin/sh -c` as the shell. Syntax: `SHELL ["executable", "parameters"]` Example: `SHELL ["/bin/bash", "-c"]`
+STOPSIGNAL | Specify the system call signal for exiting a container such as `STOPSIGNAL SIGINT`
+USER | Set user and group ID that container should run as. Syntax: `USER <user>[:<group>]`. user is the username or UID of the user to switch to. gropu is the group name or GID (group identifier), if not specified, the primary group of the user is added. This instruction can be used for running containers with reduced privileges and improves security by limiting actions that container can perform
+VOLUME | Create mount point in the docker container. Docker will create a new volume or use an existing volume at the specified path. Any data written to that path in the container will be stored outside container's writable layer which means it persists even after container is removed. It is commonly used to store information like config files, database files, log files, or any other "permanent" data. Volumes also make it easy to share data beteen multiple containers or between a container and host machine. Syntax: `VOLUME /path/to/mount/point` 
+WORKDIR | Change working directory for RUN, CMD, ENTRYPOINT, COPY, and ADD instructions. 
 
-**Sample** 
+### ENTRYPOINT VS CMD
+* An ENTRYPOINT and CMD are two parts of the same where ENTRYPOINT is used first and CMD is used second by default.
+* ENTRYPOINT must be overriden manually, otherwise it will always be run when we start our container. To override: `docker run --entrypoint="/path/to/entrypoint.sh" my-container`
+* CMD will be overriden if we pass any other commands on the command line when starting the container
+
+Let's take a look at the following sample:  
+```
+FROM debian:buster
+COPY . /myproject
+RUN apt-get update ...
+ENTRYPOINT ["entrypoint1.sh"]
+CMD ["cmd1", "cmd2"]
+```
+* `docker run my-container` Execution: entrypoint1.sh cmd1 cmd2
+* `docker run my-container cmd3` Execution: entrypoint1.sh cmd3
+
+**When should I use CMD and ENTRYPOINT**
+* ENTRYPOINT is a great tool but it is not always transparent as it hides the command logic
+* use ENTRYPOINT when your container MUST execute something at every start
+* otherwise use CMD as it is more flexible  
+
+**Source**: https://www.youtube.com/watch?v=U1P7bqVM7xM
+
+### What are layers in a Dockerfile?
+Each new instruction in a Dockerfile creates a **layer**. Layers are used to optimize caching and improve build speed. Docker uses a caching mechanism that checks if the command and its arguments match any previous commands in the Dockerfile. If yes, Docker reuses the cached layer instead of rebuilding. However, additional layers also mean more overhead and increased size for the image. When layering, consider the following:  
+1. Combine related commands if you can
+2. Use multi-stage builds to separate build-time dependencies from the final image. Multi-stage builds allow you to use different base images for your build vs runtime environments. Its basically like writing two Dockerfiles inside one
+3. Optimize the order of your commands to take advantage of the caching mechanism
+
+### Sample Dockerfile
 ```
 # specify base image  
 FROM python:3.8
@@ -111,12 +140,6 @@ EXPOSE 5000
 # run the command
 CMD ["python", "./app.py"]
 ```
-
-## Deploying application
-### Docker push
-* publish image on a registry
-* docker push username/file
-* AWS Beanstalk is a PaaS that can help to scale, monitor, and update your app
 
 ## Multi-Container Environments
 * There is usually a database or storage associated with apps (see Redis and Memcached)
