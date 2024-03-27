@@ -11,8 +11,7 @@
 * Host Operating System - computer OS
 * Docker - builds and runs the app for you
 * App - individual containers all running on one network (or if you have more than one type of app, multiple networks)
-![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)
-
+![image](https://github.com/hbuivu/Inception/assets/26291116/bcd75d70-974b-484f-a64b-d7e0e3fa840c)  
 **VM**
 * Infrastructure - physical machine that app is running on like CPU, hard disk, etc
 * Hypervisor - software that creates and manages VMs
@@ -27,19 +26,18 @@
 ## Basic Commands
 Command | Description
 :----------- | :-------------
-docker pull `<image>` | fetches image from Docker registry
+docker build | build Docker image from a Dockerfile
+docker pull | fetches image from a registry
 docker images | see list of all images on your system
-docker run `<image> <commands>` | run a docker container based on image with some command
-docker ps | show all containers currently running
-docker ps -a | shows all container that we had already run
-docker run -it | run multiple commands inside container
-docker run --help | see list of run flags
-docker rm <containerID1, containerID2, ...> | delete containers after use; you will seee the ID echoed back
-docker rm $(docker ps -a -q -f status=exited) | deletes all containers with exited status
-docker container prune | same as command above for later versions of docker
+docker run | run a docker container based on Docker image
 docker run --rm | automatically deletes container once it's exited
+docker ps | show all containers currently running
+docker rm | delete containers after use; you will seee the ID echoed back
+docker container prune | same as command above for later versions of docker
 docker rmi | delete images
-docker run -d -P --name <wechoosethisname> <image> | detach terminal and publish all exposed ports
+docker stop | stop running container
+docker exec | execute a command in a running container
+docker logs | view logs for a container
 
 ## Terminology
 Terminology | Definition
@@ -66,10 +64,34 @@ Exposed ports | allows making network services running inside a container access
   * **user:** can be both base and child; images created and shared by users. typically formatted as `user/image-name`
 
 ## Dockerfile
-* simple text file that contains a list of commands that Docker client calls while creating an image
-* automates image creation process
+* text file that contains a list of commands that Docker calls to create an image
+* specifies base image to use, dependencies, software to install, and any other configs or scripts needed to set up the environment for the app to run
 * similar to linux commands
 
+### Dockerfile commands
+Terminology | Definition
+:----------- | :-------------
+ADD | Add local or remote files and directories to Docker image. Similar to copy, but it can copy files from a remote URL (which COPY cannot), automatically extract compressed files into destination directory, and allows specifying a URL where Docker will download the source and copy it into the image
+ARG	| Use build-time variables. ex: ARG VERSION = latest \ FROM nginx:$VERSION
+CMD	| Specify default commands to run when a container is started from an image. Syntax can be specified in shell form (CMD command param1 param2) or exec form (CMD ["executable", "param1", "param2"]). There can only be 1 CMD instruction in a Dockerfile
+COPY | Copy files and directories into the image. COPY `<source path in host> <destination path in image>`
+ENTRYPOINT | Specify default executable to be run when a container is started from image. Syntax: `ENTRYPOINT ["executable", "param1", "param2"]`. See below for more on difference between CMD and ENTRYPOINT
+ENV | Set environment variables. Syntax: `ENV key1=value1 \ key2=value2`
+EXPOSE | Describe which port(s) your application is listening on. It does not publish the ports
+FROM | Specify base image from which you're building your new image. Must be the first instruction in a Dockerfile and there can only be 1 instruction. Syntax: `FROM image_name[:tag] [AS name]`. Usually the tag denotes the version of the base image like `ubuntu:20.04` or `nginx:latest`
+HEALTHCHECK | Check a container's "health" on startup (is it running properly). Example: `HEALTHCHECK --interval=5s --timeout=3s \
+  CMD curl -f http://localhost/ || exit 1`
+LABEL | Add metadata to an image.
+MAINTAINER | Specify the author of an image.
+ONBUILD | Specify instructions for when the image is used in a build.
+RUN	| Execute build commands.
+SHELL | Set the default shell of an image.
+STOPSIGNAL | Specify the system call signal for exiting a container.
+USER | Set user and group ID.
+VOLUME | Create volume mounts.
+WORKDIR | Change working directory.
+
+**Sample** 
 ```
 # specify base image  
 FROM python:3.8
