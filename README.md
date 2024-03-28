@@ -141,6 +141,96 @@ EXPOSE 5000
 CMD ["python", "./app.py"]
 ```
 
+## Docker Compose
+### What is Docker Compose
+* Docker Compose is a YAML(yet another markup language) file that runs multi-container Docker applications. You can use it to define the services, networks, and volumes needed for the application in a single file.
+* filename: `compose.yaml`. can also be `docker-compose.yaml` or `docker-compose.yml`
+* use `docker compose` command to interact with the file
+* we can have multiple compose files to represent different configurations for different parts of the project
+
+### Commands
+Terminology | Definition
+:----------- | :-------------
+attach     | Attach local standard input, output, and error streams to a service's running container.
+build      | Build or rebuild services
+config     | Parse, resolve and render compose file in canonical format
+cp         | Copy files/folders between a service container and the local filesystem
+create     | Creates containers for a service.
+down       | Stop and remove containers, networks
+events     | Receive real time events from containers.
+exec       | Execute a command in a running container.
+images     | List images used by the created containers
+kill       | Force stop service containers.
+logs       | View output from containers
+ls         | List running compose projects
+pause      | Pause services
+port       | Print the public port for a port binding.
+ps         | List containers
+pull       | Pull service images
+push       | Push service images
+restart    | Restart service containers
+rm         | Removes stopped service containers
+run        | Run a one-off command on a service.
+scale      | Scale services
+start      | Start services
+stats      | Display a live stream of container(s) resource usage statistics
+stop       | Stop services
+top        | Display the running processes
+unpause    | Unpause services
+up         | Create and start containers
+version    | Show the Docker Compose version information
+wait       | Block until the first service container stops
+watch      | Watch build context for service and rebuild/refresh containers when files are updated
+
+### Example
+The example application is composed of the following parts:  
+* 2 services, backed by Docker images: webapp and database
+* 1 secret (HTTPS certificate), injected into the frontend
+* 1 configuration (HTTP), injected into the frontend
+* 1 persistent volume, attached to the backend
+* 2 networks
+
+```
+services:
+  frontend:
+    image: example/webapp
+    ports:
+      - "443:8043"
+    networks:
+      - front-tier
+      - back-tier
+    configs:
+      - httpd-config
+    secrets:
+      - server-certificate
+
+  backend:
+    image: example/database
+    volumes:
+      - db-data:/etc/data
+    networks:
+      - back-tier
+
+volumes:
+  db-data:
+    driver: flocker
+    driver_opts:
+      size: "10GiB"
+
+configs:
+  httpd-config:
+    external: true
+
+secrets:
+  server-certificate:
+    external: true
+
+networks:
+  # The presence of these objects is sufficient to define them
+  front-tier: {}
+  back-tier: {}
+```
+
 ## Multi-Container Environments
 * There is usually a database or storage associated with apps (see Redis and Memcached)
 * keep separate containers for separate services
