@@ -148,39 +148,14 @@ CMD ["python", "./app.py"]
 * use `docker compose` command to interact with the file
 * we can have multiple compose files to represent different configurations for different parts of the project
 
-### Commands
-Terminology | Definition
-:----------- | :-------------
-attach     | Attach local standard input, output, and error streams to a service's running container.
-build      | Build or rebuild services
-config     | Parse, resolve and render compose file in canonical format
-cp         | Copy files/folders between a service container and the local filesystem
-create     | Creates containers for a service.
-down       | Stop and remove containers, networks
-events     | Receive real time events from containers.
-exec       | Execute a command in a running container.
-images     | List images used by the created containers
-kill       | Force stop service containers.
-logs       | View output from containers
-ls         | List running compose projects
-pause      | Pause services
-port       | Print the public port for a port binding.
-ps         | List containers
-pull       | Pull service images
-push       | Push service images
-restart    | Restart service containers
-rm         | Removes stopped service containers
-run        | Run a one-off command on a service.
-scale      | Scale services
-start      | Start services
-stats      | Display a live stream of container(s) resource usage statistics
-stop       | Stop services
-top        | Display the running processes
-unpause    | Unpause services
-up         | Create and start containers
-version    | Show the Docker Compose version information
-wait       | Block until the first service container stops
-watch      | Watch build context for service and rebuild/refresh containers when files are updated
+### Structure of a Docker Compose file
+https://docs.docker.com/compose/compose-file/compose-file-v3/
+* `services`: define containers that your app requires configuration that is applied to each container started for that service
+	* `image`: defines Docker image that continer will run
+	* `build`: tells compose how to build the image if it doesn't exist yet 
+		* `context`: set of files that build can access
+	* `ports`: declares port bindings 
+	* `depends on`: 
 
 ### Example
 The example application is composed of the following parts:  
