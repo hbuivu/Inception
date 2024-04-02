@@ -273,22 +273,26 @@ networks:
 	* don't forget to stop and remove other container so that it can be launched in new network
 	* containers can also resolve a container name to an IP address - called automatic service discovery
 
-## Docker Compose
-* A tool for defining and running multi-container Docker applications  
-* provides a config file called docker-compose.yml to be used to bring up an applicatin and the suite of services it dpeends on with just one command
-* A YAML file can contain:
-	* version
-	* services:
-		* image -> ALWAYS REQUIRED
-		* container_name
-		* environment
-		* ports
-		* volumes
-		* command
-		* depends_on
-		* ports
-	* volumes
-* Compose will also create the network automatically
+## NGINX
+### What is NGINX
+Nginx is a popular open-source web server and reverse proxy server. Nginx can handle a higher number of conccurent requests (compared to its competitor, Apache HTTP Server) and it has faster static content delivery with low resource usage
+
+### What is a reverse proxy server
+A reverse proxy server is a server that sits between client devices (like web browsers) and backend servers. It receives requests from clients and forwards them to the appropriate backend server. Response from backend server is then returned to the client while hiding the backend server's identity and characteristics of the client. Reverse proxies are generally owned by web services (vs a forward proxy that is owned by the client).  
+
+**Why use a reverse proxy?**
+1. protect website - reverse proxies can provide an additional layer of security by hiding the backend server's IP address and implementing security features such as access control and SSL/TLS termination.
+2. load balancing - reverse proxies distribute incoming client requests across multiple backend servers to improve performance and reliability.
+3. caching static content - if static content is constantly being requested, the reverse proxy can send cached information locally rather than asking backend servers
+4. handles ssl encryption - this way, servers only have to handle ssl handshake from a small number of reverse proxies rather than from all clients
+
+CVb3d2023
+
+
+
+
+
+
 
 		
 		 
