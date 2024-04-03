@@ -286,6 +286,435 @@ A reverse proxy server is a server that sits between client devices (like web br
 3. caching static content - if static content is constantly being requested, the reverse proxy can send cached information locally rather than asking backend servers
 4. handles ssl encryption - this way, servers only have to handle ssl handshake from a small number of reverse proxies rather than from all clients
 
+### NGINX config files
+* ends with `.conf` extension
+* found inside the `/etc/nginx/` directory
+* every time config file is updated, we will need to restart or reload nginx as the file is generally only read once
+
+Command | Description
+:----------- | :-------------
+`sudo nginx -t` | to validate config files:
+`sudo systemctl restart nginx` | restart nginx service
+`nginx -s reload` | send reload command to nginx
+`curl -i <site>` | send get request to the server 
+
+Example:
+```
+events {
+}
+http {
+    server {
+        listen 80;
+        server_name nginx-handbook.test;
+
+        return 200 "Bonjour, mon ami!\n";
+    }
+}
+```
+
+**Directives**  
+* Simple - end in semicolon
+* Block - consist of curly braces with more instructions inside
+* See list of all directives: https://nginx.org/en/docs/dirindex.html
+
+**Contexts**  
+* `events { }`: set global configuration for how nginx will handle requests on a general level. There can only be one `events` in config file
+* `http { }`: define how server will handle HTTP and HTTPS requests. Can only have one `http` context in a config file
+* `server { }`: nested inside `http` context. Used for configuring specific virtual servers within a single host. There can be multiple `server` contexts
+* `main`: configuration of the file itself. Anything outside of the other three contexts will fall inside the `main` context
+
+**Server**  
+How does nginx know which server will handle a request if there are multiple servers?  
+1. Use the `listen` directive. It specifies the IP address and port number on which the server should listen for incoming connections   
+Example:  
+```
+http {
+    server {
+        listen 80;
+        server_name nginx-handbook.test;
+
+        return 200 "hello from port 80!\n";
+    }
+
+
+    server {
+        listen 8080;
+        server_name nginx-handbook.test;
+
+        return 200 "hello from port 8080!\n";
+    }
+}
+```
+
+2. Use `server_name` directive. Used to specify the domain name or IP address that should match the server block in the nginx config. Typically used to define the virtual server that should process a request based on the requested domain name.  
+Example:  
+```
+http {
+    server {
+        listen 80;
+        server_name library.test;
+
+        return 200 "your local library!\n";
+    }
+
+
+    server {
+        listen 80;
+        server_name librarian.library.test;
+
+        return 200 "welcome dear librarian!\n";
+    }
+}
+```
+* If we send a request to http://library.test, we'll get "your local library!".   
+* If we send a request to http://librarian.library.test, we'll get "welcome dear librarian!".  
+* The `return` directive tells nginx what to return to user. It takes the status code and string message to be returned. 
+
+**Testing demo**
+update `hosts` file to include domain names:
+```
+192.168.20.20   library.test
+192.168.20.20   librarian.library.test
+```
+
+### Serving static content
+* need to store files on the server - `/serv` directory  
+
+Example: 
+```
+events {
+}
+http {
+    server {
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+    }
+}
+```
+Instead of `return`, we use `root` directive, which declares root directory for a site. This directive tells nginx to look for files to serve inside of specified directory.  
+
+**Static file type handling**  
+Example:  
+```
+events {
+}
+http {
+    types {
+        text/html html;
+        text/css css;
+    }
+    server {
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+    }
+}
+```
+* Use `types` context to tell nginx how to parse files.  
+* nginx will parse any files that end with html extension as a text/html.  
+* any files ending wtih css extension will be served as text/css.  
+* we must configure all file types here, because nginx does not know how to automatically read file extensions
+
+**How to include partial config files**  
+* With bigger projects, using `types` can be prone to errors
+* use `mime.types` in `/etc/nginx`  
+Example:
+```
+events {
+}
+http {
+    include /etc/nginx/mime.types;
+    server {
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+    }
+}
+```
+* use `include` directive to include content from other config files
+
+### Dynamic Routing 
+What happens when a client requests a route that doesn't exist?  
+
+**Location matches**  
+* `location` context: used to define how nginx should handle requests for specific URLs or patterns of URLs. 
+Example:  
+```
+events {
+
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        location /agatha {
+            return 200 "Miss Marple.\nHercule Poirot.\n";
+        }
+    }
+}
+```
+* in the above example, sending a request to http://nginx-handbook.test/agatha and to http://nginx-handbook.test/agatha-christie will give you the same response (a 200 response code and the string "Miss Marple.\nHercule POirot.\n")
+* Prefix match: `location /agatha` tells nginx to match any URI starting with "agatha.
+* Exact match: `location = /agatha` tells nginx to respond only if URL matches exactly. Anything else will yield a 404 response
+* Regex match: `location ~ /agatha[0-9]` tells nginx to check location URLs against complex regular expressions. `~` means to perform a regular expression match. nginx will only respond if there is a number after th word agatha. This expression is case sensitive
+	* to make this match case INSENSITIVE, `location ~* /agatha[0-9]`.
+* Preferential prefix match: nginx assigns priority so that regex match > prefix match. However, to prefer prefix, use the `^~` modifier:  
+```
+events {
+
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+		location ^~ /Agatha8 {
+        	return 200 "prefix matched.\n";
+        }
+        
+        location ~* /agatha[0-9] {
+        	return 200 "regex matched.\n";
+        }
+    }
+
+}
+```
+
+MATCH | MODIFIER
+:----------- | :-------------
+Exact | =
+Preferential Prefix | ^~
+REGEX | ~ or ~*
+Prefix | None
+
+### Variables
+* Use `set` directive to declare new variables anywhere in config file.  
+* Three types of variables:
+	* string
+	* integer
+	* boolean
+* nginx also has embedded variables which can be found here: https://nginx.org/en/docs/varindex.html
+
+Example:
+```
+set $<variable_name> <variable_value>;
+
+# set name "Farhan" -> set $name "Farhan";
+# set age 25 -> set $age 25
+# set is_working true set $is_working true;
+
+
+events {
+
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        return 200 "Host - $host\nURI - $uri\nArgs - $args\n";
+    }
+
+}
+```
+
+if we run the the following request, we'll get this response:  
+```
+# curl http://nginx-handbook.test/user?name=Farhan
+
+# Host - nginx-handbook.test
+# URI - /user
+# Args - name=Farhan
+```
+
+We can also access individual values using $arg variable
+```
+events {
+
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+        
+        set $name $arg_name; # $arg_<query string name>
+
+        return 200 "Name - $name\n";
+    }
+
+}
+```
+
+and we will get the following
+```
+curl http://nginx-handbook.test?name=Farhan
+
+# Name - Farhan
+```
+
+### Redirects and rewrites
+* A redirect will redirect a request to another page.   
+```
+events {
+
+}
+
+http {
+
+    include /etc/nginx/mime.types;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+
+        location = /index_page {
+                return 307 /index.html;
+        }
+
+        location = /about_page {
+                return 307 /about.html;
+        }
+    }
+}
+```
+a request to http://nginx-handbook.test/about_page will be redirected to http://nginx-handbook.test/about.html  
+
+* a rewrite directive changes URI internally without letting the user know. 
+```
+
+events {
+
+}
+
+http {
+
+    include /etc/nginx/mime.types;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+
+        rewrite /index_page /index.html;
+
+        rewrite /about_page /about.html;
+    }
+}
+```
+* A code of 200 is given as well as the full html code for the about.html file.  
+* The URL will remain unchanged (unlike redirect, which will take us to http://nginx-handbook.test/about.html)
+
+```
+curl -i http://nginx-handbook.test/about_page
+
+# HTTP/1.1 200 OK
+# Server: nginx/1.18.0 (Ubuntu)
+# Date: Thu, 22 Apr 2021 18:09:31 GMT
+# Content-Type: text/html
+# Content-Length: 960
+# Last-Modified: Wed, 21 Apr 2021 11:27:06 GMT
+# Connection: keep-alive
+# ETag: "60800c0a-3c0"
+# Accept-Ranges: bytes
+
+# <!DOCTYPE html>
+# <html lang="en">
+# <head>
+#     <meta charset="UTF-8">
+#     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#     <title>NGINX Handbook Static Demo</title>
+#     <link rel="stylesheet" href="mini.min.css">
+#     <style>
+#         .container {
+#             max-width: 1024px;
+#             margin-left: auto;
+#             margin-right: auto;
+#         }
+# 
+#         h1 {
+#             text-align: center;
+#         }
+#     </style>
+# </head>
+# <body class="container">
+#     <header>
+#         <a class="button" href="index.html">Index</a>
+#         <a class="button" href="about.html">About</a>
+#         <a class="button" href="nothing">Nothing</a>
+#     </header>
+#     <div class="card fluid">
+#         <img src="./the-nginx-handbook.jpg" alt="The NGINX Handbook Cover Image">
+#     </div>
+#     <div class="card fluid">
+#         <h1>this is the <strong>about.html</strong> file</h1>
+#     </div>
+# </body>
+# </html>
+```
+
+* `rewrite` causes the `server` context go be re-evaluated by nginx. therefore, it is more expensive than a redirect
+
+### Try for multiple files
+the `try_files` directive lets you check for the existence of multiple files.  
+Example:  
+```
+
+events {
+
+}
+
+http {
+
+    include /etc/nginx/mime.types;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-projects/static-demo;
+
+        try_files /the-nginx-handbook.jpg /not_found;
+
+        location /not_found {
+                return 404 "sadly, you've hit a brick wall buddy!\n";
+        }
+    }
+}
+```
+* `try_files /the-nginx-handbook.jpg /not_found;` instructs nginx to look for a file named the-nginx-handbook.jpg on the root whenever a request is received. If it doesn't exist, we go to the /not_found location
+* to make this better (since with this config, we will always get the tryfile jpg since it does exist in the folder), we use the $uri variable
+* ` try_files $uri /not_found;` tells nginx to try for the URI requested by the client first
+* `try_files $uri $uri/ /not_found;` nginx will look for the URI first, and if that doesnt work, it will look for the uri as a directory
+
+## Logging in NGINX
+
+
+
+
 CVb3d2023
 
 
