@@ -286,6 +286,11 @@ A reverse proxy server is a server that sits between client devices (like web br
 3. caching static content - if static content is constantly being requested, the reverse proxy can send cached information locally rather than asking backend servers
 4. handles ssl encryption - this way, servers only have to handle ssl handshake from a small number of reverse proxies rather than from all clients
 
+**Terms**  
+* URI - Uniform Resource Identifier. A string of characters that provides a unique address used to identify a resource such as a web page, file, or service. URIs can be further classified into URL and URN
+* URL - Uniform Resource Locator. Specifies the network location (domain name/IP address of server and path to resource on server) of a resource and the protocol (http, https, ftp) used to access it. 
+* URN - Uniform Resource Name. provides a unique name for a resource but does not specify how to locate it. They are persistnet and location-independent . For example, `urn:isbn:0451450523`, which identifies a book by its ISBN number is a URN
+
 ### NGINX config files
 * ends with `.conf` extension
 * found inside the `/etc/nginx/` directory
@@ -710,7 +715,112 @@ http {
 * ` try_files $uri /not_found;` tells nginx to try for the URI requested by the client first
 * `try_files $uri $uri/ /not_found;` nginx will look for the URI first, and if that doesnt work, it will look for the uri as a directory
 
-## Logging in NGINX
+## Logging
+* log files located in `/var/log/nginx`
+* `sudo nginx -s reopen` if you delete any logs and create new ones, need to refresh. otherwise, nginx will keep writing to previously opened stream
+* access and error logs
+* use `access_log` directive to customize logging behavior  
+Example:
+```
+events {
+
+}
+
+http {
+
+    include /etc/nginx/mime.types;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+        
+        location / {
+            return 200 "this will be logged to the default file.\n";
+        }
+        
+        location = /admin {
+            access_log /var/logs/nginx/admin.log;
+            
+            return 200 "this will be logged in a separate file.\n";
+        }
+		#write any access log of this URI to /var/logs/nginx/admin.log
+        
+        location = /no_logging {
+            access_log off;
+            
+            return 200 "this will not be logged.\n";
+        }
+		#turns off access logs for this location completely
+    }
+}
+```
+This yields:
+```
+curl http://nginx-handbook.test/no_logging
+# this will not be logged
+
+sudo cat /var/log/nginx/access.log
+# empty
+
+curl http://nginx-handbook.test/admin
+# this will be logged in a separate file.
+
+sudo cat /var/log/nginx/access.log
+# empty
+
+sudo cat /var/log/nginx/admin.log 
+# 192.168.20.20 - - [25/Apr/2021:11:13:53 +0000] "GET /admin HTTP/1.1" 200 40 "-" "curl/7.68.0"
+
+curl  http://nginx-handbook.test/
+# this will be logged to the default file.
+
+sudo cat /var/log/nginx/access.log 
+# 192.168.20.20 - - [25/Apr/2021:11:15:14 +0000] "GET / HTTP/1.1" 200 41 "-" "curl/7.68.0"
+```
+* `error.log` files record any crashes or errors
+	* 8 levels of error messages
+		* `debug` - debugging info
+		* `info` - informational messages
+		* `notice` - something normal happened that is worth noting 
+		* `warn` - something unexpected happened, but not a cause for concern
+		* `error` - something was unsuccessful
+		* `crit` - a problem needs to be critically addressed
+		* `alert` - prompt acion required
+		* `emerg` - system is unusable and requires immediate attention
+	* by default nginx records all level of messages but we can cutomize with `error_log` directive
+		* `error_log /var/log/error.log warn;`
+		* this means only messages with level of `warn` or above will be logged
+
+### Using NGINX as a reverse proxy
+* use `proxy_pass` directive - passes a client's request to a third party server and reverse proxies the response to the client  
+Example:
+```
+events {
+
+}
+
+http {
+
+    include /etc/nginx/mime.types;
+
+    server {
+        listen 80;
+        server_name nginx.test;
+		# any request that matches the root path `/` will be handled here
+        location / { 
+                proxy_pass "https://nginx.org/";
+				# any request that matches root path will be forwarded to https://niginx.org
+        }
+    }
+}
+```
+* When a request is made to nginx.test (specified in server_name directive), nginx will receive the request and forward it to https://nginx.org as if it originated from nginx itself
+* nginx will receive response from https://nginx.org and send it back to client that made the original request to nginx.test.
+
+### PHP
+
+
 
 
 
