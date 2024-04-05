@@ -819,6 +819,198 @@ http {
 * nginx will receive response from https://nginx.org and send it back to client that made the original request to nginx.test.
 
 ### PHP
+* `php -S localhost:<port>`
+
+### Using NGINX as a load balancer
+* A load balancer is a software application or device that distributes incoming network traffic across a group of backend servers, ensuring that no single server is overwhelmed by traffic. 
+* Distribution is usually based on some predefined algorithm (round robin, least connections, IP hash, etc)
+* They can also perform health checks on backend servers and remove any that are not responsive
+* use `upstream` context to define the servers that will be treated as a single backend
+
+```
+events {
+
+}
+
+http {
+
+    upstream backend_servers {
+        server localhost:3001;
+        server localhost:3002;
+        server localhost:3003;
+    }
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        location / {
+            proxy_pass http://backend_servers;
+        }
+    }
+}
+```
+
+### Optimizing NGINX for maximum performance
+**Configuring worker processes and worker connections**
+* nginx can spawn multiple worker processes capable of handling thousands of requests each
+* `sudo systemctl status nginx` - will telll you how many worker processes you have
+* use `worker_process` directive in the `main` context to set number of worker processes to spawn
+
+```
+worker_processes 2;
+
+events {
+
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        return 200 "worker processes and worker connections configuration!\n";
+    }
+}
+```
+* worker processes are asynchronous
+* generally, the optimal number of worker processes should be equal to number of CPU cores
+	* use `nproc` command to figure out how many cpus are on server in Linux
+* in the case of changing CPU numbers, set `worker_processes auto`
+* worker connection is how many connections a single worker process can handle
+* to find the number of files operating system allows to open per core, use `ulimit -n` command in linux
+* use `worker_connections` directive to configure the worker connections
+
+```
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        return 200 "worker processes and worker connections configuration!\n";
+    }
+}
+```
+
+**Caching static content**
+* caching is the process of storing copies of files or data in a temporary storage so that they can be quicly accessed when needed. It reduces the time needed to fetch resources that are frequently requested
+* Static content are files that don't change frequently such as images, CSS files, Javascript files, and html files  
+
+Example:
+```
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+
+    include /env/nginx/mime.types;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-demo/static-demo;
+        
+        location ~* \.(css|js|jpg)$ {
+            access_log off;
+            
+            add_header Cache-Control public;
+            add_header Pragma public;
+            add_header Vary Accept-Encoding;
+            expires 1M;
+        }
+    }
+}
+```
+* `location ~* \.(css|js|jpg)$` tells nginx to match requests asking for a file ending with .css, .js, and .jpg
+* use `add_header` directive to include a header in the response to the client
+	* headers are additional pieces of information that are sent along with a request or response in HTTP messages. They provide metadata about the message and can be used to pass info between client (like web browser) and server
+		* content negotiation - `Content-Type` and `Content-Encoding` tells client about the type and encoding of content being sent
+		* caching - `Cache-Control` and `Expires` tells client how long response can be cached
+		* authentication - `WWW-Authenticate` and `Authorization` are used to implement authentication and authorization mechanisms, allowing server to control access to resources
+		* redirects - `Location` redirect client to a different URL
+		* cookies - `Set-Cookie` sets cookies in client's browser and used for session management or track user behavior
+		* compression - `Content-Encoding` indicates that response is compressed, reducing the amount of data that needs to be transferred over the network
+	* in the example:
+		* `Cache-Control public` - content can be cached in any way
+		* `Pragma public` - older version of cache-control
+		* `Vary Accept-Encoding` - cached content may vary depending on the content encoding accepted by the client
+		* `expires` directive - set the `Expires` header to `1M` (1 month) `10m` is 10 minutes. `24h` is 24 hours  
+
+**Compress Responses**  
+* compression reduces the size of the response data before sending it over the network
+* client must decompress the data before using the contents  
+Example:  
+```
+
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /env/nginx/mime.types;
+
+    gzip on;
+    gzip_comp_level 3;
+
+    gzip_types text/css text/javascript;
+
+    server {
+
+        listen 80;
+        server_name nginx-handbook.test;
+
+        root /srv/nginx-handbook-demo/static-demo;
+        
+        location ~* \.(css|js|jpg)$ {
+            access_log off;
+            
+            add_header Cache-Control public;
+            add_header Pragma public;
+            add_header Vary Accept-Encoding;
+            expires 1M;
+        }
+    }
+}
+```
+
+* GZIP is a popular file format used by apps for file compression and decompression
+* use `gzip` directives to manage GZIP files
+* `gzip on;` - tells nginx to compress responses
+* `gzip_comp_level 3;` - set level of compression (1-4 generally efficient enough)
+* `gzip_types text/css text/javascript;` - by default, NGINX will compress HTML responses. Pass any other files you want to compress to `gzip_types`
+* with compression, the client has to ask for the compressed response. The `add_header Vary Accept-Encoding;` line lets the client know that the response may vary based on what client accepts.
+	* to request uncompressed mini.min.css file: `curl -I http://nginx-handbook.test/mini.min.css`
+	* to request compressed mini.min.css file: `curl -I -H "Accept-Encoding: gzip" http://nginx-handbook.test/mini.min.css`
+	* use `ls -lh` to see the size of each file
+
+## Configuring SSL
+* an SSL certificate allows a server to move from HTTP to HTTPS
+* issued by a certificate authority (CA)
+* some nonprofit authorities will issue certificates for free (like Let's encrypt)
+
+
+
+	
+
+
 
 
 
