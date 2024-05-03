@@ -1008,16 +1008,32 @@ http {
 
 
 
-	
-
-
-
-
-
-
-
-
-CVb3d2023
+# Other notes	
+* CVb3d2023
+* By default nginx runs on port 80
+* to access docker container:  
+	docker -exec -it <container_id> sh  
+	note container_id can eitherb the last column in docker_ps or the id number
+* to look for docker containers  
+	docker ps
+* to stop a docker container  
+	docker stop <container_id>
+* to remove a docker container  
+	docker rm <container_id>
+* to build  
+	docker build -t <name> <path_of_context>
+* to remove docker image  
+	docker rmi <image_id>
+* to run docker container  
+	docker run -d -p 8080:80 <respository>:<tag> 
+	-d - runs container in detached mode so that you can use the terminal for other commands
+	-p 8080:80 - publishes container's port 80 to host machines' 8080. we can access nginx web server running inside ht ontainer on port 80 by connecting to port 8080 of host machine
+* exposing a port - exposes a port from the container to other containers. this documents which prts are inteded to be used byt e ap inside the container. Does not publish the port. 
+* publishing a port - overrides expose instructions. allows external processes to connect to the container on that port
+* to show all containers  
+	docker ps -a
+* to check logs for errors:  
+	docker logs <container_id>
 
 
 
