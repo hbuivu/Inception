@@ -1012,7 +1012,7 @@ http {
 * CVb3d2023
 * By default nginx runs on port 80
 * to access docker container:  
-	docker -exec -it <container_id> sh  
+	docker exec -it <container_id> sh  
 	note container_id can eitherb the last column in docker_ps or the id number
 * to look for docker containers  
 	docker ps
@@ -1034,6 +1034,14 @@ http {
 	docker ps -a
 * to check logs for errors:  
 	docker logs <container_id>
+* to remove all docker containers from docker ps  
+	docker rm -f $(docker ps -aq)
+* to remove all images from docker  
+	docker rmi -f $(docker images -q)
+* to stop all containers  
+	docker stop $(docker ps -q)
+
+https://www.padok.fr/en/blog/docker-processes-container#:~:text=One%20Docker%20container%20%3D%20one%20init%20process,-To%20avoid%20having&text=To%20do%20this%2C%20the%20program,it%20easy%20to%20override%20it.
 
 
 
