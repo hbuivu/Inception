@@ -1,0 +1,36 @@
+#specify version of docker yaml
+# version: '3.3'
+services:
+   nginx:
+    #not required but this will give a custom name to container, making it easier to reference
+    container_name: nginx
+    #use image for pre-existing docker images, and build for customized docker image
+    #add path to docker file
+    build: ./requirements/nginx
+    hostname: 
+    volumes:
+    networks:
+    #service is responsible for serving HTTP(S) traffic and is the only service that needs to expose ports to the outside world.
+    #port 80 for http, port 443 for https
+    ports:
+      - "443:443"
+    depends_on: wordpress
+    restart: always
+  wordpress:
+    container_name: wp
+    build: ./requirements/wordpress
+    volumes:
+      - wpdb: 
+      - wpfiles:
+    depends_on: mariadb
+    restart: always
+  mariadb:
+    container_name: db
+    build: ./requirements/mariadb
+    volumes:
+    restart: always
+
+ 
+volumes:
+network:
+
