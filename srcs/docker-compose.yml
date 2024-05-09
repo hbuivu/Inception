@@ -3,34 +3,83 @@
 services:
    nginx:
     #not required but this will give a custom name to container, making it easier to reference
+    #container_name is used in Docker commands/scripts
     container_name: nginx
     #use image for pre-existing docker images, and build for customized docker image
     #add path to docker file
     build: ./requirements/nginx
-    hostname: 
+    #nginx will only need access to this volume to serve content, does not need direct access to mariadb
     volumes:
+      - wpvol:/var/www/wordpress
     networks:
+      - inception
     #service is responsible for serving HTTP(S) traffic and is the only service that needs to expose ports to the outside world.
     #port 80 for http, port 443 for https
     ports:
       - "443:443"
     depends_on: wordpress
     restart: always
+    #hostname is used to identify containers within a network
+    # hostname: 
   wordpress:
     container_name: wp
     build: ./requirements/wordpress
+    #volume_name:location
+    #/var/www/ is root directory where website files are stored
+    #/var/www/wordpress is often used as installation direcotry for wordpress
     volumes:
-      - wpdb: 
-      - wpfiles:
+      - wpvol:/var/www/wordpress
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      USER_NAME: ${USER_NAME}
+      USER_EMAIL: ${USER_EMAIL}
+      USER_ADMIN_EMAIL: ${USER_ADMIN_EMAIL}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      TITLE: ${TITLE} 
+    networks:
+      - inception
     depends_on: mariadb
     restart: always
   mariadb:
     container_name: db
     build: ./requirements/mariadb
+    #/var/lib/mysql is usually used to store database files and related data
     volumes:
-    restart: always
+      - dbvol:/var/lib/mysql
+    environment:
 
- 
+    networks:
+      -inception
+    restart: always 
+# Volumes are normally created in /var/lib/docker/volumes (if you use Linux).
 volumes:
-network:
+  wpvol:
+    #driver is a plugin that allows containers to use volumes backed by external storage systems
+    #local driver is default volume driver for Docker. It will createa nd amange the volume using the local filestysem of the host machine
+    #usually found in /var/lib/docker/volumes
+    driver: local
+    #define driver options
+    driver_opts:
+      #create volum that is simply a reference to a specific location on host filesystem. volume is treated as a simple bind mount
+      #other types include local/volume/remote/cloud/tmpfs
+      type: none
+      #specifies location of volume. can be IP address for NFS server or local path on host machine
+      device: ~/data/wp
+      #additional mount options. rw=read-write, ro-read-only
+      o: ro
+  dbvol: 
+    driver: local
+    driver_opts:
+      type: none
+      device: ~/data/mariadb
+      o: rw
+Edefine networks that containers can be connected to
+networks:
+  inception: 
+    driver: bridge
 
+# The local driver is just a driver that stores the volume in your own machine storage but does not specify where. However you can find all the volumes in /var/lib/docker/volumes directory. You don't need to though. Docker handles all of the machinery for you.
