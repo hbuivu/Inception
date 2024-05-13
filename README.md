@@ -153,7 +153,7 @@ To see the full documentation of all keys:
 https://docs.docker.com/compose/compose-file/compose-file-v3/
 
 **SERVCES**
-A service definition contains configuration that is applied to each container started for that service, similar to passing command line parameters to docker run. Anything specified in Docker file does not need to be specified again in YAML file  
+A service definition contains configuration that is applied to each container started for that service, similar to passingƒ command line parameters to docker run. Anything specified in Docker file does not need to be specified again in YAML file  
 
 * `services`: define containers that your app requires 
 	* `image`: defines Docker image that continer will run
