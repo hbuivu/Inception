@@ -7,9 +7,9 @@ RUN apk update &&\
 	apk add --no-cache mariadb mariadb-client mariadb-server-utils &&\
 	rm -f /var/cache/apk/*
 
-COPY run.sh /scripts/run.sh
+ADD ./run2.sh /scripts/run.sh
 
-RUN mkdir /docker-entrypoint-initdb.d \
+RUN mkdir /docker-entrypoint-initdb.d && \
 	chmod -R 755 /scripts 
 # default permissions by docker is usually set to 755 for directories so we might not need this?
 
@@ -17,11 +17,11 @@ RUN mkdir /docker-entrypoint-initdb.d \
 EXPOSE 3306
 
 #run the script upon startup
-ENTRYPOINT ["/scripts/runs.sh"]
+CMD ["./scripts/run.sh"] 
 
 #see https://mariadb.com/kb/en/creating-a-custom-container-image/
-HEALTHCHECK --start-period=5m \
-  CMD mariadb -e 'SELECT @@datadir;' || exit 1
+# HEALTHCHECK --start-period=5m \
+#   CMD mariadb -e 'SELECT @@datadir;' || exit 1
 
 # CMD ["mysqld", "--user=mysql", "--console"]
 
