@@ -1,7 +1,7 @@
 #specify version of docker yaml
 # version: '3.3'
 services:
-   nginx:
+  nginx:
     #not required but this will give a custom name to container, making it easier to reference
     #container_name is used in Docker commands/scripts
     container_name: nginx
@@ -20,7 +20,7 @@ services:
     depends_on: wordpress
     restart: always
     #hostname is used to identify containers within a network
-    # hostname: 
+    #hostname: 
   wordpress:
     container_name: wp
     build: ./requirements/wordpress
@@ -29,17 +29,8 @@ services:
     #/var/www/wordpress is often used as installation direcotry for wordpress
     volumes:
       - wpvol:/var/www/wordpress
-    environment:
-      DB_HOST: ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      USER_NAME: ${USER_NAME}
-      USER_EMAIL: ${USER_EMAIL}
-      USER_ADMIN_EMAIL: ${USER_ADMIN_EMAIL}
-      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      TITLE: ${TITLE} 
+    env_file:
+      - .env
     networks:
       - inception
     depends_on: mariadb
@@ -50,8 +41,8 @@ services:
     #/var/lib/mysql is usually used to store database files and related data
     volumes:
       - dbvol:/var/lib/mysql
-    environment:
-
+    env_file:
+      - .env
     networks:
       -inception
     restart: always 
@@ -77,7 +68,7 @@ volumes:
       type: none
       device: ~/data/mariadb
       o: rw
-Edefine networks that containers can be connected to
+#define networks that containers can be connected to
 networks:
   inception: 
     driver: bridge
