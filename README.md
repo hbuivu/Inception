@@ -1026,6 +1026,8 @@ http {
 	docker rmi <image_id>
 * to run docker container  
 	docker run -d -p 8080:80 <respository>:<tag> 
+	docker run -it --env-file <env_file_location> <img name>
+	docker run -it <img name> /bin/sh
 	-d - runs container in detached mode so that you can use the terminal for other commands
 	-p 8080:80 - publishes container's port 80 to host machines' 8080. we can access nginx web server running inside ht ontainer on port 80 by connecting to port 8080 of host machine
 * exposing a port - exposes a port from the container to other containers. this documents which prts are inteded to be used byt e ap inside the container. Does not publish the port. 
