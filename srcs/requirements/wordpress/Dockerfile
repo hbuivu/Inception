@@ -28,14 +28,15 @@ RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.ph
 RUN chmod +x wp-cli.phar
 RUN cp wp-cli.phar /usr/bin/wp
 
+#workdir will make the folder if one does not exist
 WORKDIR /var/www/html/wordpress
 
-COPY ./script.sh .
+COPY ./script.sh /scripts/script
 
-RUN chmod +x script.sh
+RUN chmod +x /scripts/script.sh
 
-ENTRYPOINT ["scripts/script.sh"]
-# CMD ./script.sh
+# ENTRYPOINT [".scripts/script.sh"]
+CMD ./scripts/script.sh
 # RUN chmod +x ./script.sh
 # COPY ./wp-config.php /
 # RUN ls -l /scripts > ./hi.txit t

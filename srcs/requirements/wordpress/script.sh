@@ -22,10 +22,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
 	wp config set DB_NAME $MARIADB_NAME --allow-root
 	wp config set DB_HOST $MARIADB_HOST --allow-root
 	
-	wp config set FORCE_SSL_ADMIN 'false' --allow-root
-    wp config set WP_REDIS_HOST $REDIS_HOST --allow-root
-    wp config set WP_REDIS_PASSWORD $REDIS_PWD --allow-root
-    wp config set WP_CACHE 'true' --allow-root
+	# wp config set FORCE_SSL_ADMIN 'false' --allow-root
+    # wp config set WP_REDIS_HOST $REDIS_HOST --allow-root
+    # wp config set WP_REDIS_PASSWORD $REDIS_PWD --allow-root
+    # wp config set WP_CACHE 'true' --allow-root
 
 
 	# wp plugin install redis-cache --allow-root
@@ -33,8 +33,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
     # wp redis enable --allow-root
 	
 
-	cp wp-config-sample.php wp-config.php
+	# cp wp-config-sample.php wp-config.php
 fi
+
+/usr/sbin/php-fpm7 -F -R
 
 # exec "$@"
 

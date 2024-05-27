@@ -1027,7 +1027,7 @@ http {
 * to run docker container  
 	docker run -d -p 8080:80 <respository>:<tag> 
 	docker run -it --env-file <env_file_location> <img name>
-	docker run -it <img name> /bin/sh
+	docker run -it <img name> /bin/sh -> make sure that in dockerfile you are using cmd and not entrypoint
 	-d - runs container in detached mode so that you can use the terminal for other commands
 	-p 8080:80 - publishes container's port 80 to host machines' 8080. we can access nginx web server running inside ht ontainer on port 80 by connecting to port 8080 of host machine
 * exposing a port - exposes a port from the container to other containers. this documents which prts are inteded to be used byt e ap inside the container. Does not publish the port. 
@@ -1046,6 +1046,8 @@ http {
 https://www.padok.fr/en/blog/docker-processes-container#:~:text=One%20Docker%20container%20%3D%20one%20init%20process,-To%20avoid%20having&text=To%20do%20this%2C%20the%20program,it%20easy%20to%20override%20it.
 
 https://developer.wordpress.org/cli/commands/
+
+https://forums.docker.com/t/can-i-access-wordpress-with-http-localhost-9000/140546
 
 
 
