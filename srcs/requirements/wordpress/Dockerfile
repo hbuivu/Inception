@@ -31,7 +31,7 @@ RUN cp wp-cli.phar /usr/bin/wp
 #workdir will make the folder if one does not exist
 WORKDIR /var/www/html/wordpress
 
-COPY ./script.sh /scripts/script
+COPY ./script.sh /scripts/script.sh
 
 RUN chmod +x /scripts/script.sh
 
