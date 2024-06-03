@@ -41,7 +41,8 @@ volumes:
     driver_opts:
       type: none
       # device: C:\Users\huong\Desktop\Inception\srcs\requirements\wordpress
-      device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/wordpress
+      # device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/wordpress
+      device: /Users/hbui-vu/Desktop/Inception/srcs/requirements/wordpress
       o: bind
   dbvol: 
     name: dbvol
@@ -49,7 +50,8 @@ volumes:
     driver_opts:
       type: none
       # device: C:\Users\huong\Desktop\Inception\srcs\requirements\mariadb
-      device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/mariadb
+      # device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/mariadb
+      device: /Users/hbui-vu/Desktop/Inception/srcs/requirements/mariadb
       o: bind
 networks:
   inception: 

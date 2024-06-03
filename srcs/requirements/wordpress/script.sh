@@ -32,9 +32,9 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
 	# cp wp-config-sample.php wp-config.php
 fi
 
-#change ownership 
-chown -R www-data:ww-data /var/www/html/wordpress
-chown -R 755 /var/www/html/wordpress
+# #change ownership 
+# chown -R www-data:ww-data /var/www/html/wordpress
+# chown -R 755 /var/www/html/wordpress
 
 /usr/sbin/php-fpm7 -F -R
 
