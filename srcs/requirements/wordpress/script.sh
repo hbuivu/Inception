@@ -1,11 +1,7 @@
 #!/bin/sh
 
-if [ ! -f /var/www/wordpress/wp-config.php ]; then 
+if [ ! -f /var/www/html/wordpress/wp-config.php ]; then 
 	echo "Wordpress not found. Installing..."
-	
-	cd var
-	mkdir www
-	cd www
 
 	wp core download --allow-root
 	wp config create --dbname=$MARIADB_NAME --dbuser=$MARIADB_USER \
@@ -35,6 +31,10 @@ if [ ! -f /var/www/wordpress/wp-config.php ]; then
 
 	# cp wp-config-sample.php wp-config.php
 fi
+
+#change ownership 
+chown -R www-data:ww-data /var/www/html/wordpress
+chown -R 755 /var/www/html/wordpress
 
 /usr/sbin/php-fpm7 -F -R
 

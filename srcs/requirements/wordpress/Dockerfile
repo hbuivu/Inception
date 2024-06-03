@@ -26,17 +26,17 @@ RUN apk update && \
 #manages wp installations, plugin and themes, database operations, user management, site config, and content management
 RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x wp-cli.phar
-RUN cp wp-cli.phar /usr/bin/wp
+RUN cp wp-cli.phar /usr/local/bin/wp
 
 #workdir will make the folder if one does not exist
 WORKDIR /var/www/html/wordpress
 
-COPY ./script.sh /scripts/script.sh
+COPY ./script.sh script.sh
 
-RUN chmod +x /scripts/script.sh
+RUN chmod +x script.sh
 
-# ENTRYPOINT [".scripts/script.sh"]
-CMD ./scripts/script.sh
+ENTRYPOINT ["./script.sh"]
+# CMD ./scripts/script.sh
 # RUN chmod +x ./script.sh
 # COPY ./wp-config.php /
 # RUN ls -l /scripts > ./hi.txit t

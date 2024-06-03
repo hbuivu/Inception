@@ -1043,6 +1043,10 @@ http {
 * to stop all containers  
 	docker stop $(docker ps -q)
 
+Run yaml file:
+docker-compose up -d
+-d = detached mode, so that containers run in the background and we can continue to use our terminal
+
 https://www.padok.fr/en/blog/docker-processes-container#:~:text=One%20Docker%20container%20%3D%20one%20init%20process,-To%20avoid%20having&text=To%20do%20this%2C%20the%20program,it%20easy%20to%20override%20it.
 
 https://developer.wordpress.org/cli/commands/
