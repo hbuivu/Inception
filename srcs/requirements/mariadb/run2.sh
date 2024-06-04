@@ -27,6 +27,16 @@ if [ ! -d /var/lib/mysql/mysql ]; then
 	    return 1
 	fi
 
+	echo $MARIADB_NAME
+	echo $MARIADB_USER
+	echo $MARIADB_PWD
+	echo $MARIADB_HOST
+	echo $WP_DOMAIN_NAME
+	echo $WP_TITLE
+	echo $WP_ADMIN_USER
+	echo $WP_ADMIN_PWD
+	echo $WP_ADMIN_EMAIL
+
 
 # ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PWD';
 # GRANT ALL ON *.* TO 'root'@'%' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
@@ -63,6 +73,8 @@ sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.cnf
 sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/my.cnf.d/mariadb-server.cnf 	 	
 
 #start mariadb server
+# /etc/init.d/mysqld stop
 exec /usr/bin/mysqld --user=mysql --console
+
 
 	

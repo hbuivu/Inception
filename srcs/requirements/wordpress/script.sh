@@ -5,18 +5,17 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
 
 	wp core download --allow-root
 	wp config create --dbname=$MARIADB_NAME --dbuser=$MARIADB_USER \
-        --dbpass=$MARIADB_PWD --dbhost=$MARIADB_HOST --allow-root  --skip-check
+        --dbpass=$MARIADB_PWD --dbhost=$MARIADB_HOST --allow-root --skip-check
     wp core install --url=$WP_DOMAIN_NAME --title=$WP_TITLE --admin_user=$WP_ADMIN_USER \
         --admin_password=$WP_ADMIN_PWD --admin_email=$WP_ADMIN_EMAIL \
         --allow-root
 	wp user create $WP_USER $WP_USER_EMAIL --role=author --user_pass=$WP_USER_PWD --allow-root
 	wp theme install neve --activate --allow-root
 
-	#stream editor
-	wp config set DB_USER $MARIADB_USER --allow-root
-	wp config set DB_PASSWORD $MARIADB_PWD --allow-root
-	wp config set DB_NAME $MARIADB_NAME --allow-root
-	wp config set DB_HOST $MARIADB_HOST --allow-root
+	# wp config set DB_USER $MARIADB_USER --allow-root
+	# wp config set DB_PASSWORD $MARIADB_PWD --allow-root
+	# wp config set DB_NAME $MARIADB_NAME --allow-root
+	# wp config set DB_HOST $MARIADB_HOST --allow-root
 	
 	# wp config set FORCE_SSL_ADMIN 'false' --allow-root
     # wp config set WP_REDIS_HOST $REDIS_HOST --allow-root

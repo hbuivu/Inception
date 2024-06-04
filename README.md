@@ -1053,18 +1053,3 @@ https://developer.wordpress.org/cli/commands/
 
 https://forums.docker.com/t/can-i-access-wordpress-with-http-localhost-9000/140546
 
-
-
-
-
-
-
-
-		
-		 
-
-	
-
-
-
-
