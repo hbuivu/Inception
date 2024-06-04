@@ -8,7 +8,8 @@ services:
     networks:
       - inception
     ports:
-      - "443:443"
+  # - "443:443"
+      - "8080:8080"
     depends_on: 
       - wordpress
     restart: always
@@ -42,7 +43,7 @@ volumes:
       type: none
       # device: C:\Users\huong\Desktop\Inception\srcs\requirements\wordpress
       # device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/wordpress
-      device: /Users/hbui-vu/Desktop/Inception/srcs/requirements/wordpress
+      device: /Users/hbui-vu/Desktop/Inception/vol
       o: bind
   dbvol: 
     name: dbvol
@@ -51,7 +52,7 @@ volumes:
       type: none
       # device: C:\Users\huong\Desktop\Inception\srcs\requirements\mariadb
       # device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/mariadb
-      device: /Users/hbui-vu/Desktop/Inception/srcs/requirements/mariadb
+      device: /Users/hbui-vu/Desktop/Inception/vol
       o: bind
 networks:
   inception: 

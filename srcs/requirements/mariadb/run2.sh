@@ -9,7 +9,8 @@ fi
 if [ ! -d /var/lib/mysql/mysql ]; then
 	echo "MySQL directory not found. Creating initial MySQL directory..."
 	chown -R mysql:mysql /var/lib/mysql
-	mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
+	# mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
+	mysql_install_db --basedir=/usr --datadir=/var/lib/mysql --user=mysql > /dev/null
 
 	#SET THESE VARIABLES IN .ENV IN THE YAML FILE
 	# if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
@@ -26,17 +27,6 @@ if [ ! -d /var/lib/mysql/mysql ]; then
 	if [ ! -f "$tfile" ]; then
 	    return 1
 	fi
-
-	echo $MARIADB_NAME
-	echo $MARIADB_USER
-	echo $MARIADB_PWD
-	echo $MARIADB_HOST
-	echo $WP_DOMAIN_NAME
-	echo $WP_TITLE
-	echo $WP_ADMIN_USER
-	echo $WP_ADMIN_PWD
-	echo $WP_ADMIN_EMAIL
-
 
 # ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PWD';
 # GRANT ALL ON *.* TO 'root'@'%' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
@@ -68,6 +58,15 @@ EOF
 	/usr/bin/mysqld --user=mysql --bootstrap --verbose=0 --skip-name-resolve --skip-networking=0 < $tfile
 	rm -f $tfile
 fi
+
+echo "these are the environmental variables"
+echo $MARIADB_CHARSET
+echo $MARIADB_COLLATION
+echo $MARIADB_ROOT_PWD
+echo $MARIADB_NAME
+echo $MARIADB_USER
+echo $MARIADB_PWD
+echo $MARIADB_HOST
 
 sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.cnf
 sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/my.cnf.d/mariadb-server.cnf 	 	

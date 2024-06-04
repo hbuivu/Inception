@@ -1042,6 +1042,9 @@ http {
 	docker rmi -f $(docker images -q)
 * to stop all containers  
 	docker stop $(docker ps -q)
+* to see and remove volumes:
+	docker volume rm <vol_name> <vol_name>...
+	docker volume ls
 
 Run yaml file:
 docker-compose up -d
@@ -1053,3 +1056,4 @@ https://developer.wordpress.org/cli/commands/
 
 https://forums.docker.com/t/can-i-access-wordpress-with-http-localhost-9000/140546
 
+mysql -u 

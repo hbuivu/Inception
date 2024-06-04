@@ -27,9 +27,15 @@ RUN apk update && \
 RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x wp-cli.phar
 RUN cp wp-cli.phar /usr/local/bin/wp
+RUN adduser -S www-data -G www-data && \
+    sed -i "s|user = nobody|user = www-data|g" /etc/php81/php-fpm.d/www.conf && \
+    sed -i "s|group = nobody|group = www-data|g" /etc/php81/php-fpm.d/www.conf && \
+    sed -i "s|listen = 127.0.0.1:9000|listen = 9000|g" /etc/php81/php-fpm.d/www.conf && \
+    sed -i "s|;listen.owner = nobody|listen.owner = www-data|g" /etc/php81/php-fpm.d/www.conf && \
+    sed -i "s|;listen.group = www-data|listen.group = www-data|g" /etc/php81/php-fpm.d/www.conf
 
 #workdir will make the folder if one does not exist
-WORKDIR /var/www/html/wordpress
+WORKDIR /var/www/wordpress
 
 COPY ./script.sh script.sh
 
