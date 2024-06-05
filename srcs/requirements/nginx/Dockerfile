@@ -26,7 +26,7 @@ RUN openssl req -x509 -sha256 -nodes \
 	-days 365 \
 	-subj "/C=AE/ST=AbuDhabi/L=AbuDhabi/O=42AbuDhabi/OU=Inception/CN=hbui-vu" \
 	-keyout /etc/nginx/ssl/private/nginx.key \
-	-out /etc/nginx/ssl/certs/nginx.cert
+	-out /etc/nginx/ssl/certs/nginx.pem
 
 #copy over configure file
 COPY default.conf /etc/nginx/http.d/default.conf
