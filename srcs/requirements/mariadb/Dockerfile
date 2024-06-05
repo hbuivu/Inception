@@ -7,7 +7,7 @@ RUN apk update &&\
 	apk add --no-cache mariadb mariadb-client mariadb-server-utils &&\
 	rm -f /var/cache/apk/*
 
-ADD ./run2.sh /scripts/run.sh
+ADD ./run.sh /scripts/run.sh
 
 RUN mkdir /docker-entrypoint-initdb.d && \
 	chmod -R 755 /scripts 

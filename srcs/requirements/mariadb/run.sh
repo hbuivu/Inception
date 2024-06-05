@@ -1,129 +1,79 @@
 #!/bin/sh
 
-# execute any pre-init scripts
-for i in /scripts/pre-init.d/*sh
-do
-	if [ -e "${i}" ]; then
-		echo "[i] pre-init.d - processing $i"
-		. "${i}"
-	fi
-done
-
-if [ -d "/run/mysqld" ]; then
-	echo "[i] mysqld already present, skipping creation"
-	chown -R mysql:mysql /run/mysqld
-else
-	echo "[i] mysqld not found, creating...."
+if [ ! -d "/run/mysqld" ]; then
+	echo "mysqld not found, creating...."
 	mkdir -p /run/mysqld
 	chown -R mysql:mysql /run/mysqld
 fi
 
-if [ -d /var/lib/mysql/mysql ]; then
-	echo "[i] MySQL directory already present, skipping creation"
+if [ ! -d /var/lib/mysql/mysql ]; then
+	echo "MySQL directory not found. Creating initial MySQL directory..."
 	chown -R mysql:mysql /var/lib/mysql
-else
-	echo "[i] MySQL data directory not found, creating initial DBs"
+	# mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
+	mysql_install_db --basedir=/usr --datadir=/var/lib/mysql --user=mysql > /dev/null
 
-	chown -R mysql:mysql /var/lib/mysql
+	#SET THESE VARIABLES IN .ENV IN THE YAML FILE
+	# if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
+	# 	MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} #i think we set this in secrets?
+	# fi
 
-	mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
+	# WP_DB_NAME=${WP_DB_NAME:-""}
+	# MYSQL_USER=${MYSQL_USER:-""}
+	# MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
 
-	if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
-		MYSQL_ROOT_PASSWORD=`pwgen 16 1`
-		echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
-	fi
-
-	MYSQL_DATABASE=${MYSQL_DATABASE:-""}
-	MYSQL_USER=${MYSQL_USER:-""}
-	MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
+	
 
 	tfile=`mktemp`
 	if [ ! -f "$tfile" ]; then
 	    return 1
 	fi
 
+# ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PWD';
+# GRANT ALL ON *.* TO 'root'@'%' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
+# GRANT ALL ON *.* TO 'root'@'localhost' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
+# CREATE DATABASE $WP_DATABASE_NAME CHARACTER SET utf8 COLLATE utf8_general_ci;
+# CREATE USER '$WP_DATABASE_USR'@'%' IDENTIFIED by '$WP_DATABASE_PWD';
+# GRANT ALL PRIVILEGES ON $WP_DATABASE_NAME.* TO '$WP_DATABASE_USR'@'%';
+# ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PWD';
 	cat << EOF > $tfile
+
 USE mysql;
 FLUSH PRIVILEGES ;
-GRANT ALL ON *.* TO 'root'@'%' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
-GRANT ALL ON *.* TO 'root'@'localhost' identified by '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
-SET PASSWORD FOR 'root'@'localhost'=PASSWORD('${MYSQL_ROOT_PASSWORD}') ;
+DELETE FROM	mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DELETE FROM mysql.db WHERE Db='test';
 DROP DATABASE IF EXISTS test ;
+
+SET PASSWORD FOR 'root'@'localhost'=PASSWORD('${MARIADB_ROOT_PWD}') ;
+
+CREATE DATABASE $MARIADB_NAME CHARACTER SET $MARIADB_CHARSET COLLATE $MARIADB_COLLATION;
+CREATE USER '$MARIADB_USER'@'%' IDENTIFIED by '$MARIADB_PWD';
+GRANT ALL PRIVILEGES ON $MARIADB_NAME.* TO '$MARIADB_USER'@'%';
+
 FLUSH PRIVILEGES ;
+
 EOF
 
-	if [ "$MYSQL_DATABASE" != "" ]; then
-	    echo "[i] Creating database: $MYSQL_DATABASE"
-		if [ "$MYSQL_CHARSET" != "" ] && [ "$MYSQL_COLLATION" != "" ]; then
-			echo "[i] with character set [$MYSQL_CHARSET] and collation [$MYSQL_COLLATION]"
-			echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` CHARACTER SET $MYSQL_CHARSET COLLATE $MYSQL_COLLATION;" >> $tfile
-		else
-			echo "[i] with character set: 'utf8' and collation: 'utf8_general_ci'"
-			echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` CHARACTER SET utf8 COLLATE utf8_general_ci;" >> $tfile
-		fi
-
-		if [ "$MYSQL_USER" != "" ]; then
-			echo "[i] Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
-			echo "GRANT ALL ON \`$MYSQL_DATABASE\`.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tfile
-		fi
-	fi
-
+	#initialize the mariadb data directory from the tfile
 	/usr/bin/mysqld --user=mysql --bootstrap --verbose=0 --skip-name-resolve --skip-networking=0 < $tfile
 	rm -f $tfile
-
-    # only run if we have a starting MYSQL_DATABASE env variable AND
-    # the /docker-entrypoint-initdb.d/ file is not empty
-	if [ "$MYSQL_DATABASE" != "" ] && [ "$(ls -A /docker-entrypoint-initdb.d 2>/dev/null)" ]; then
-
-		# start the server temporarily so that we can import seed files
-        echo
-        echo "Preparing to process the contents of /docker-entrypoint-initdb.d/"
-        echo
-		TEMP_OUTPUT_LOG=/tmp/mysqld_output
-		/usr/bin/mysqld --user=mysql --skip-name-resolve --skip-networking=0 --silent-startup > "${TEMP_OUTPUT_LOG}" 2>&1 &
-		PID="$!"
-	
-		# watch the output log until the server is running
-		until tail "${TEMP_OUTPUT_LOG}" | grep -q "Version:"; do
-			sleep 0.2
-		done
-
-		# use mysql client to import seed files while temp db is running
-		# use the starting MYSQL_DATABASE so mysql knows where to import
-		MYSQL_CLIENT="/usr/bin/mysql -u root -p$MYSQL_ROOT_PASSWORD"
-		
-        # loop through all the files in the seed directory
-        # redirect input (<) from .sql files into the mysql client command line
-        # pipe (|) the output of using `gunzip -c` on .sql.gz files
-		for f in /docker-entrypoint-initdb.d/*; do
-			case "$f" in
-				*.sql)    echo "  $0: running $f"; eval "${MYSQL_CLIENT} ${MYSQL_DATABASE} < $f"; echo ;;
-				*.sql.gz) echo "  $0: running $f"; gunzip -c "$f" | eval "${MYSQL_CLIENT} ${MYSQL_DATABASE}"; echo ;;
-			esac
-		done
-
-    	# send the temporary mysqld server a shutdown signal
-        # and wait till it's done before completeing the init process
-    	kill -s TERM "${PID}"
-    	wait "${PID}"
-        rm -f TEMP_OUTPUT_LOG
-    	echo "Completed processing seed files."
-	fi;
-
-	echo
-	echo 'MySQL init process done. Ready for start up.'
-	echo
-
-	echo "exec /usr/bin/mysqld --user=mysql --console --skip-name-resolve --skip-networking=0" "$@"
 fi
 
-# execute any pre-exec scripts
-for i in /scripts/pre-exec.d/*sh
-do
-	if [ -e "${i}" ]; then
-		echo "[i] pre-exec.d - processing $i"
-		. ${i}
-	fi
-done
+# echo "these are the environmental variables"
+# echo $MARIADB_CHARSET
+# echo $MARIADB_COLLATION
+# echo $MARIADB_ROOT_PWD
+# echo $MARIADB_NAME
+# echo $MARIADB_USER
+# echo $MARIADB_PWD
+# echo $MARIADB_HOST
 
-exec /usr/bin/mysqld --user=mysql --console --skip-name-resolve --skip-networking=0 $@
+sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.cnf
+sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/my.cnf.d/mariadb-server.cnf 	 	
+
+#start mariadb server
+# /etc/init.d/mysqld stop
+exec /usr/bin/mysqld --user=mysql --console
+
+
+	
