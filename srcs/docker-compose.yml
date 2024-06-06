@@ -41,17 +41,16 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /Users/hbui-vu/Desktop/Inception/vol
-      # device: \Users\huong\Desktop\Inception\vol
+      # device: /Users/hbui-vu/Desktop/Inception/vol
+      device: mnt/c/Users/huong/Desktop/Inception/vol
       o: bind
   dbvol: 
     name: dbvol
     driver: local
     driver_opts:
       type: none
-      # device: /mnt/c/Users/huong/Desktop/Inception/srcs/requirements/mariadb
-      device: /Users/hbui-vu/Desktop/Inception/vol
-      # device: \Users\huong\Desktop\Inception\vol
+      # device: /Users/hbui-vu/Desktop/Inception/vol
+      device: mnt/c/Users/huong/Desktop/Inception/vol
       o: bind
 networks:
   inception: 

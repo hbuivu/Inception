@@ -34,9 +34,7 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
 fi
 
 # #change ownership 
-# chown -R [new_owner]:[new_group] /path/to/directory
-# www-data user 
-# chown -R www-data:www-data /var/www/html/wordpress
+# chown -R www-data:ww-data /var/www/html/wordpress
 # chown -R 755 /var/www/html/wordpress
 
 php-fpm81 -F -R
