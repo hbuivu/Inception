@@ -33,11 +33,12 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
 	# cp wp-config-sample.php wp-config.php
 fi
 
-# #change ownership 
+#change ownership, -R=recursive, chnages ownership of directory and all files inside 
 # chown -R [new_owner]:[new_group] /path/to/directory
+#change permissions to read/write/ex for owner, and read/ex for group/others
 # www-data user 
-# chown -R www-data:www-data /var/www/html/wordpress
-# chown -R 755 /var/www/html/wordpress
+chown -R www-data:www-data /var/www/html/wordpress
+chmod -R 755 /var/www/html/wordpress
 
 php-fpm81 -F -R
 
