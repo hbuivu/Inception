@@ -14,6 +14,13 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
 	wp user create $WP_USER $WP_USER_EMAIL --role=subscriber --user_pass=$WP_USER_PWD --allow-root
 	wp theme install neve --activate --allow-root
 
+	wp config set WP_REDIS_HOST $REDIS_HOST --allow-root
+	wp config set WP_REDIS_PORT $REDIS_PORT --allow-root
+	# wp config set WP_REDIS_PASSWORD $REDIS_PWD --allow-root
+
+	wp plugin install redis-cache --allow-root
+	wp plugin activate redis-cache --allow-root
+
 	# wp config set DB_USER $MARIADB_USER --allow-root
 	# wp config set DB_PASSWORD $MARIADB_PWD --allow-root
 	# wp config set DB_NAME $MARIADB_NAME --allow-root
@@ -25,14 +32,10 @@ if [ ! -f /var/www/html/wordpress/wp-config.php ]; then
     # wp config set WP_CACHE 'true' --allow-root
 
 
-	# wp plugin install redis-cache --allow-root
-    # wp plugin activate redis-cache --allow-root
-    # wp redis enable --allow-root
-	
-
 	# cp wp-config-sample.php wp-config.php
 fi
 
+wp redis enable --allow-root
 #change ownership, -R=recursive, chnages ownership of directory and all files inside 
 # chown -R [new_owner]:[new_group] /path/to/directory
 #change permissions to read/write/ex for owner, and read/ex for group/others

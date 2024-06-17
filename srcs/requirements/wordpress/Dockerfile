@@ -17,8 +17,8 @@ RUN apk update && \
 	php-mbstring \
 	php-openssl \
 	php-xml \
-	php-zip && \ 
-	apk add curl && \
+	php-zip \ 
+	curl && \
 	rm -f /var/cache/apk/*
 
 #install wordpress
