@@ -1,0 +1,23 @@
+Docker Compose
+-YAML file (yet another markup language)
+-Used to run a multi-container Docker application
+-Services - lists out all the containers in app
+-Volumes - create named volumes or bind mounts that can be resued
+	-volumes are used to persist data -> otherwise data is lost each time we close docker containers
+	-bind mounts will link a directory or file on the host machine to a directory in the container
+		-used for development bc we can change something in the container right away via the colume
+	-named volumes are managed by Docker and good for production - easier to manage and better isolation
+	-driver: local - driver defines storage driver used to manage volume
+		-local - Docker will create a directory on host machine
+	-driver_opts - more options
+		type: none - no specific filesystem type (used with bind mounts)
+		device: <location> - where volume will be mounted on host machine
+		o: bind - bind mount
+-Networks - define custom network for Services
+	-the most common network driver used in Docker compose is bridge network driver
+	-creates a virtual network on host machine and assigns ip addresses to each container
+	-containers then use their assigned ip address inside inception network
+
+NGINX
+default.conf -> belongs in conf.d folder and is used to configure specific server settings
+nginx.conf -> used for global settings

@@ -1058,47 +1058,82 @@ https://forums.docker.com/t/can-i-access-wordpress-with-http-localhost-9000/1405
 
 docker run -d -p 80:80 --name ngtest ngtest
 
-mysql
+MARIADB
+mysql -u root -p
+SHOW DATABASES;
+SHOW TABLES IN <DATABASE>;
+SELECT * FROM <TABLE>;
 
-settings -> network -> advanced -> port forwarding -> set to port 22 for ssh
-to see groups
-    getent group <groupname>
-add user to sudo group
+VM SETUP
+Set up port forwarding networks
+22->22
+at 42, do 2222 and 22, since using port 22 on the mac does not work
+443->443
+8080->80
+
+Basic Commands
+Go to root
     su
+To see groups:
+    getent group <groupname>
+To add user to a group
     sudo usermod -aG <group> <username>
-add user to sudoers:
+To install
+    sudo apt update
+    sudo apt install <package>
+
+* Add user to sudo 
+    sudo usermod -aG sudo <user>
+* add user to sudoers
     sudo visudo
     under user privilege specification, add same rule as root, except with username
     root    ALL=(ALL:ALL) ALL
     hbui-vu ALL=(ALL:ALL) ALL
-install ssh
+* install ssh
     sudo apt update
     sudo apt install openssh-server
-check that ssh is working
-    sudo systemctl status ssh
-    *replace status with stop, restart, start for other commands
-install docker
-    sudo apt update
+    sudo systemctl status ssh (can replace status with stop, restart, start)
+* install docker
     sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt update
     sudo apt install docker-ce docker-ce-cli containerd.io
     sudo docker run hello-world
-    sudo apt-get install docker-compose-plugin
+* install docker compose
+    sudo apt install docker-compose-plugin
+    or
+    sudo apt update
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    docker-compose --version
+* add user to docker group
+    sudo usermod -aG docker <user>
+* set up shared folder
+    Devices->insert guest additions cd image
 
-add user to docker group
+    -> we have to move cdrom somewhere to be able to execute the vboxlinuxadditions
+    sudo mkdir -p /mnt/cdrom
+    sudo umount /media/cdrom0
+    sudo mount /dev/sr0 /mnt/cdrom
+    ls /mnt/cdrom
+    sudo ./VBoxLinuxAdditions.run
 
-reboot to take effect
+    sudo usermod -aG vboxsf <user>
 
-set up shared folder 
--> settings
--> shared folder
--> find folder from drop down and use auto mount
+    Settings -> shared folder -> pick folder -> automount and permanent
+* set up hosts folder
+    sudo nano etc/hosts
+    add 127.0.0.1 hbui-vu.42.fr
+    ctrl+x -> y -> enter
+* create data folder
+    sudo mkdir /home/hbui-vu/data
+* reboot
+    sudo reboot
 
-set up port forwarding in networks
-22 22
-443 443
-8080 80
+https://localhost/wp-admin -> goes to admin page
+    
+
+
 
 

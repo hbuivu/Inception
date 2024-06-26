@@ -1,20 +1,23 @@
-# version: '3'
 services:
   nginx:
     container_name: nginx
     build: ./requirements/nginx
     volumes:
       - wpvol:/var/www/html/wordpress
+      - adminervol:/var/www/html/adminer
+      - sitevol:/var/www/html/site
+      - phpvol:/usr/share/webapps/phpmyadmin
     networks:
       - inception
     ports:
-      - "8080:80"
+      - "80:80"
       - "443:443"
-    depends_on: 
+      # - "8080:8080"
+    depends_on:
       - wordpress
     restart: always
   wordpress:
-    container_name: wp
+    container_name: wordpress
     build: ./requirements/wordpress
     volumes:
       - wpvol:/var/www/html/wordpress
@@ -22,36 +25,137 @@ services:
       - .env
     networks:
       - inception
-    depends_on: 
+    depends_on:
       - mariadb
+      - redis
+      - adminer
     restart: always
   mariadb:
-    container_name: db
+    container_name: mariadb
     build: ./requirements/mariadb
-    volumes:
+    volumes: 
       - dbvol:/var/lib/mysql
     env_file:
       - .env
     networks:
       - inception
-    restart: always 
+    restart: always
+  redis:
+    container_name: redis
+    build: ./requirements/bonus/redis
+    volumes:
+      - redisvol:/etc/redis
+    networks:
+      - inception
+    restart: always
+  ftp:
+    container_name: ftp
+    build: ./requirements/bonus/ftp
+    volumes:
+      - wpvol:/var/www/html/wordpress
+    env_file:
+      - .env
+    networks:
+      - inception
+    ports:
+      - "20:20"
+      - "21:21"
+      - "40000-40100:40000-40100"
+    restart: always
+  site:
+    container_name: site
+    build: ./requirements/bonus/site
+    volumes:
+      - sitevol:/var/www/html/site
+    networks:
+      - inception
+    ports:
+      - "3000:3000"
+    restart: always
+  adminer:
+    container_name: adminer
+    build: ./requirements/bonus/adminer
+    volumes:
+      - adminervol:/var/www/html/adminer
+    env_file:
+      - .env
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: always
+  phpmyadmin:
+    container_name: phpmyadmin
+    build: ./requirements/bonus/phpmyadmin
+    volumes:
+      - phpvol:/usr/share/webapps/phpmyadmin
+    networks:
+      - inception
+    restart: always
 volumes:
   wpvol:
     name: wpvol
     driver: local
     driver_opts:
       type: none
-      # device: /Users/hbui-vu/Desktop/Inception/vol
-      device: mnt/c/Users/huong/Desktop/Inception/vol
+      device: /home/hbui-vu/data/wp
+      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
       o: bind
-  dbvol: 
+  dbvol:
     name: dbvol
     driver: local
     driver_opts:
       type: none
-      # device: /Users/hbui-vu/Desktop/Inception/vol
-      device: mnt/c/Users/huong/Desktop/Inception/vol
+      device: /home/hbui-vu/data/db
+      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
+      o: bind
+  redisvol:
+    name: redisvol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/redis
+      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
+      o: bind
+  sitevol:
+    name: sitevol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/site
+      # device: /mnt/c/Users/huong/Desktop/Inception2/sitevol
+      o: bind
+  adminervol:
+    name: adminervol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/adminer
+      # device: /mnt/c/Users/huong/Desktop/Inception2/adminervol
+      o: bind
+  phpvol:
+    name: phpvol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/php
+      # device: /mnt/c/Users/huong/Desktop/Inception2/phpvol
       o: bind
 networks:
-  inception: 
+  inception:
     driver: bridge
+
+ # cadvisor:
+  #   container_name: cadvisor
+  #   build: ./requirements/bonus/cadvisor
+  #   # volumes:
+  #   # - /:/rootfs:ro
+  #   # - /var/run:/var/run:ro
+  #   # - /sys:/sys:ro
+  #   # - /var/lib/docker/:/var/lib/docker:ro
+  #   # - /dev/disk/:/dev/disk:ro
+  #   networks: 
+  #     - inception
+  #   ports:
+  #     - "8000:8080"
+  #   restart: always
