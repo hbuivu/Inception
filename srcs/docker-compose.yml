@@ -3,9 +3,8 @@ services:
     container_name: nginx
     build: ./requirements/nginx
     volumes:
-      - wpvol:/var/www/html/wordpress
-      - adminervol:/var/www/html/adminer
       - sitevol:/var/www/html/site
+      - wpvol:/var/www/html/wordpress
       - phpvol:/usr/share/webapps/phpmyadmin
     networks:
       - inception
@@ -75,12 +74,10 @@ services:
   adminer:
     container_name: adminer
     build: ./requirements/bonus/adminer
-    volumes:
-      - adminervol:/var/www/html/adminer
-    env_file:
-      - .env
     networks:
       - inception
+    expose: 
+      - "8080"
     depends_on:
       - mariadb
     restart: always
@@ -98,48 +95,40 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/hbui-vu/data/wp
-      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
+      # device: /home/hbui-vu/data/wp
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
       o: bind
   dbvol:
     name: dbvol
     driver: local
     driver_opts:
       type: none
-      device: /home/hbui-vu/data/db
-      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
+      # device: /home/hbui-vu/data/db
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
       o: bind
   redisvol:
     name: redisvol
     driver: local
     driver_opts:
       type: none
-      device: /home/hbui-vu/data/redis
-      # device: /mnt/c/Users/huong/Desktop/Inception2/vol
+      # device: /home/hbui-vu/data/redis
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
       o: bind
   sitevol:
     name: sitevol
     driver: local
     driver_opts:
       type: none
-      device: /home/hbui-vu/data/site
-      # device: /mnt/c/Users/huong/Desktop/Inception2/sitevol
-      o: bind
-  adminervol:
-    name: adminervol
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/hbui-vu/data/adminer
-      # device: /mnt/c/Users/huong/Desktop/Inception2/adminervol
+      # device: /home/hbui-vu/data/site
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/site
       o: bind
   phpvol:
     name: phpvol
     driver: local
     driver_opts:
       type: none
-      device: /home/hbui-vu/data/php
-      # device: /mnt/c/Users/huong/Desktop/Inception2/phpvol
+      # device: /home/hbui-vu/data/php
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/php
       o: bind
 networks:
   inception:
@@ -159,3 +148,21 @@ networks:
   #   ports:
   #     - "8000:8080"
   #   restart: always
+
+# 
+
+# volumes:
+#   - adminervol:/var/www/html/adminer
+# env_file:
+#   - .env
+
+#  adminervol:
+#     name: adminervol
+#     driver: local
+#     driver_opts:
+#       type: none
+#       # device: /home/hbui-vu/data/adminer
+#       device: /mnt/c/Users/huong/Desktop/Inception/vol/adminer
+#       o: bind
+
+# - adminervol:/var/www/html/adminer
