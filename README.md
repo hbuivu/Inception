@@ -1132,6 +1132,17 @@ To install
     sudo reboot
 
 https://localhost/wp-admin -> goes to admin page
+
+BONUS:
+Redis
+-open-source, in-memory data structure store - used as a database, cache, and message broker
+FTP server
+-network server that supports File Transfer Protocol (FTP) to transfer files between a cleint and a server over a network
+Adminer
+-single page php file that is a web-based database management tool
+Static site
+phpmyadmin
+-similar to adminer but more indepth and designed specifically for mySql
     
 
 

@@ -21,3 +21,7 @@ Docker Compose
 NGINX
 default.conf -> belongs in conf.d folder and is used to configure specific server settings
 nginx.conf -> used for global settings
+
+/var/log/nginx/error.log
+
+ps aux | grep nginx

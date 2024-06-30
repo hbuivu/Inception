@@ -3,7 +3,6 @@ services:
     container_name: nginx
     build: ./requirements/nginx
     volumes:
-      - sitevol:/var/www/html/site
       - wpvol:/var/www/html/wordpress
       - phpvol:/usr/share/webapps/phpmyadmin
     networks:
@@ -11,7 +10,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      # - "8080:8080"
     depends_on:
       - wordpress
     restart: always
@@ -64,12 +62,10 @@ services:
   site:
     container_name: site
     build: ./requirements/bonus/site
-    volumes:
-      - sitevol:/var/www/html/site
     networks:
       - inception
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     restart: always
   adminer:
     container_name: adminer
@@ -86,6 +82,8 @@ services:
     build: ./requirements/bonus/phpmyadmin
     volumes:
       - phpvol:/usr/share/webapps/phpmyadmin
+    depends_on:
+      - mariadb
     networks:
       - inception
     restart: always
@@ -104,7 +102,7 @@ volumes:
     driver_opts:
       type: none
       # device: /home/hbui-vu/data/db
-      device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
+      device: /mnt/c/Users/huong/Desktop/Inception/vol/db
       o: bind
   redisvol:
     name: redisvol
@@ -113,14 +111,6 @@ volumes:
       type: none
       # device: /home/hbui-vu/data/redis
       device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
-      o: bind
-  sitevol:
-    name: sitevol
-    driver: local
-    driver_opts:
-      type: none
-      # device: /home/hbui-vu/data/site
-      device: /mnt/c/Users/huong/Desktop/Inception/vol/site
       o: bind
   phpvol:
     name: phpvol
@@ -166,3 +156,30 @@ networks:
 #       o: bind
 
 # - adminervol:/var/www/html/adminer
+
+#  volumes:
+#       - sitevol:/var/www/html/site
+#   ports:
+      # - "3000:3000"
+  # sitevol:
+  #   name: sitevol
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     # device: /home/hbui-vu/data/site
+  #     device: /mnt/c/Users/huong/Desktop/Inception/vol/site
+  #     o: bind
+
+  #  - sitevol:/var/www/html/site
+  #  volumes:
+  #     - phpvol:/usr/share/webapps/phpmyadmin
+
+      # - phpvol:/usr/share/webapps/phpmyadmin  
+    #    phpvol:
+    # name: phpvol
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   # device: /home/hbui-vu/data/php
+    #   device: /mnt/c/Users/huong/Desktop/Inception/vol/php
+    #   o: bind

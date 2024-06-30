@@ -13,17 +13,12 @@
 //   console.log(`Server is running on http://localhost:${PORT}`);
 // });
 
-const express = require('express')
+const express = require('express');
+const path = require('path');
+const app = express();
 
-const app = express()
-
-app.use(express.static('public'))
-
-app.get('/', (req, res) => {
-    res.send('Hello World');
-  });
-
+app.use('/site', express.static(path.join(__dirname, 'public')));
 
 app.listen(3000, () => {
-    console.log("server running on port 3000")
-})
+    console.log("server running on port 3000");
+});
