@@ -1062,7 +1062,11 @@ MARIADB
 mysql -u root -p
 SHOW DATABASES;
 SHOW TABLES IN <DATABASE>;
+USE <DATABASE>;
 SELECT * FROM <TABLE>;
+
+SELECT column1, column2 FROM <TABLE>;
+SELECT * FROM my_table WHERE column1 = 'some_value';
 
 VM SETUP
 Set up port forwarding networks
@@ -1143,6 +1147,18 @@ Adminer
 Static site
 phpmyadmin
 -similar to adminer but more indepth and designed specifically for mySql
+
+UPLOAD files:
+curl -T local_filename ftp://username:password@servername:mapped_port/uploads_folder/filename
+Check config.sh. We created an uploads folder specifically for uploads that the user has access to
+chroot enable means that during login, the user is confined to the home folder (/home/user/ftp) Therefore, we only need to use the relative path only (/uploads)
+curl -T testfile.txt ftp://hbui-vu:hbui-vu@localhost:21/uploads/testfile.txt
+
+DOWNLOAD files:
+curl -u username:password ftp://ftp.example.com/path/to/file -o local_filename
+
+List Directory Contents:
+curl -u username:password ftp://ftp.example.com/path/to/directory/
     
 
 

@@ -40,8 +40,6 @@ services:
   redis:
     container_name: redis
     build: ./requirements/bonus/redis
-    volumes:
-      - redisvol:/etc/redis
     networks:
       - inception
     restart: always
@@ -49,7 +47,7 @@ services:
     container_name: ftp
     build: ./requirements/bonus/ftp
     volumes:
-      - wpvol:/var/www/html/wordpress
+      - wpvol:/home/hbui-vu/ftp/uploads
     env_file:
       - .env
     networks:
@@ -103,14 +101,6 @@ volumes:
       type: none
       # device: /home/hbui-vu/data/db
       device: /mnt/c/Users/huong/Desktop/Inception/vol/db
-      o: bind
-  redisvol:
-    name: redisvol
-    driver: local
-    driver_opts:
-      type: none
-      # device: /home/hbui-vu/data/redis
-      device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
       o: bind
   phpvol:
     name: phpvol
@@ -182,4 +172,13 @@ networks:
     #   type: none
     #   # device: /home/hbui-vu/data/php
     #   device: /mnt/c/Users/huong/Desktop/Inception/vol/php
+    #   o: bind
+
+    # redisvol:
+    # name: redisvol
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   # device: /home/hbui-vu/data/redis
+    #   device: /mnt/c/Users/huong/Desktop/Inception/vol/wp
     #   o: bind

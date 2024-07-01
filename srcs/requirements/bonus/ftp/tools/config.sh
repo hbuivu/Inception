@@ -30,7 +30,7 @@ if [ ! -f /etc/vsftpd/vsftpd.conf.bak ]; then
 	userlist_file=/etc/vsftpd.userlist
 	userlist_deny=NO" >> /etc/vsftpd/vsftpd.conf
 
-	cat /etc/vsftpd/vsftpd.conf
+	# cat /etc/vsftpd/vsftpd.conf
 
 	adduser $WP_ADMIN_USER --disabled-password
 	# echo "$WP_ADMIN_USER:$FTP_PSWD" | /usr/bin/passwd
