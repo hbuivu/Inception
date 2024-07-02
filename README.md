@@ -120,27 +120,6 @@ Each new instruction in a Dockerfile creates a **layer**. Layers are used to opt
 2. Use multi-stage builds to separate build-time dependencies from the final image. Multi-stage builds allow you to use different base images for your build vs runtime environments. Its basically like writing two Dockerfiles inside one
 3. Optimize the order of your commands to take advantage of the caching mechanism
 
-### Sample Dockerfile
-```
-# specify base image  
-FROM python:3.8
-
-# set a directory for the app
-WORKDIR /usr/src/app
-
-# copy all the files to the container
-COPY . .
-
-# install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# define the port number the container should expose
-EXPOSE 5000
-
-# run the command
-CMD ["python", "./app.py"]
-```
-
 ## Docker Compose
 ### What is Docker Compose
 * Docker Compose is a YAML(yet another markup language) file that runs multi-container Docker applications. You can use it to define the services, networks, and volumes needed for the application in a single file.
@@ -197,56 +176,6 @@ specify networks to be created
 	* `driver_opts`: specifies options to pass to the other network driver
 	* `external`: specifies that the network is external to the Compose file
 	* `name`: specifies the name of the network
-
-
-### Example
-The example application is composed of the following parts:  
-* 2 services, backed by Docker images: webapp and database
-* 1 secret (HTTPS certificate), injected into the frontend
-* 1 configuration (HTTP), injected into the frontend
-* 1 persistent volume, attached to the backend
-* 2 networks
-
-```
-services:
-  frontend:
-    image: example/webapp
-    ports:
-      - "443:8043"
-    networks:
-      - front-tier
-      - back-tier
-    configs:
-      - httpd-config
-    secrets:
-      - server-certificate
-
-  backend:
-    image: example/database
-    volumes:
-      - db-data:/etc/data
-    networks:
-      - back-tier
-
-volumes:
-  db-data:
-    driver: flocker
-    driver_opts:
-      size: "10GiB"
-
-configs:
-  httpd-config:
-    external: true
-
-secrets:
-  server-certificate:
-    external: true
-
-networks:
-  # The presence of these objects is sufficient to define them
-  front-tier: {}
-  back-tier: {}
-```
 
 ## Multi-Container Environments
 * There is usually a database or storage associated with apps (see Redis and Memcached)
