@@ -2,6 +2,7 @@
 
 # rc-update add vsftpd default
 # rc-service vsftpd restart
+inotifywait -m /home/$WP_ADMIN_USER/ftp/uploads
 
 if [ ! -f /etc/vsftpd/vsftpd.conf.bak ]; then
 	cp /etc/vsftpd/vsftpd.conf /etc/vsftpd/vsftpd.conf.bak
@@ -45,9 +46,14 @@ if [ ! -f /etc/vsftpd/vsftpd.conf.bak ]; then
 
 	#add user to ftpuser list
 	echo $WP_ADMIN_USER | tee -a /etc/vsftpd.userlist
+
 fi
 
 /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
+
+#check
+ls -la /home/$WP_ADMIN_USER
+ls -la /home/$WP_ADMIN_USER/ftp
 # rc-service vsftpd restart
 
 # configure firewall and add 21, 21, and minport:pasv_max_port

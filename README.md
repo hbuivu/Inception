@@ -120,27 +120,6 @@ Each new instruction in a Dockerfile creates a **layer**. Layers are used to opt
 2. Use multi-stage builds to separate build-time dependencies from the final image. Multi-stage builds allow you to use different base images for your build vs runtime environments. Its basically like writing two Dockerfiles inside one
 3. Optimize the order of your commands to take advantage of the caching mechanism
 
-### Sample Dockerfile
-```
-# specify base image  
-FROM python:3.8
-
-# set a directory for the app
-WORKDIR /usr/src/app
-
-# copy all the files to the container
-COPY . .
-
-# install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# define the port number the container should expose
-EXPOSE 5000
-
-# run the command
-CMD ["python", "./app.py"]
-```
-
 ## Docker Compose
 ### What is Docker Compose
 * Docker Compose is a YAML(yet another markup language) file that runs multi-container Docker applications. You can use it to define the services, networks, and volumes needed for the application in a single file.
@@ -198,56 +177,6 @@ specify networks to be created
 	* `external`: specifies that the network is external to the Compose file
 	* `name`: specifies the name of the network
 
-
-### Example
-The example application is composed of the following parts:  
-* 2 services, backed by Docker images: webapp and database
-* 1 secret (HTTPS certificate), injected into the frontend
-* 1 configuration (HTTP), injected into the frontend
-* 1 persistent volume, attached to the backend
-* 2 networks
-
-```
-services:
-  frontend:
-    image: example/webapp
-    ports:
-      - "443:8043"
-    networks:
-      - front-tier
-      - back-tier
-    configs:
-      - httpd-config
-    secrets:
-      - server-certificate
-
-  backend:
-    image: example/database
-    volumes:
-      - db-data:/etc/data
-    networks:
-      - back-tier
-
-volumes:
-  db-data:
-    driver: flocker
-    driver_opts:
-      size: "10GiB"
-
-configs:
-  httpd-config:
-    external: true
-
-secrets:
-  server-certificate:
-    external: true
-
-networks:
-  # The presence of these objects is sufficient to define them
-  front-tier: {}
-  back-tier: {}
-```
-
 ## Multi-Container Environments
 * There is usually a database or storage associated with apps (see Redis and Memcached)
 * keep separate containers for separate services
@@ -295,27 +224,6 @@ A reverse proxy server is a server that sits between client devices (like web br
 * ends with `.conf` extension
 * found inside the `/etc/nginx/` directory
 * every time config file is updated, we will need to restart or reload nginx as the file is generally only read once
-
-Command | Description
-:----------- | :-------------
-`sudo nginx -t` | to validate config files:
-`sudo systemctl restart nginx` | restart nginx service
-`nginx -s reload` | send reload command to nginx
-`curl -i <site>` | send get request to the server 
-
-Example:
-```
-events {
-}
-http {
-    server {
-        listen 80;
-        server_name nginx-handbook.test;
-
-        return 200 "Bonjour, mon ami!\n";
-    }
-}
-```
 
 **Directives**  
 * Simple - end in semicolon
@@ -818,9 +726,6 @@ http {
 * When a request is made to nginx.test (specified in server_name directive), nginx will receive the request and forward it to https://nginx.org as if it originated from nginx itself
 * nginx will receive response from https://nginx.org and send it back to client that made the original request to nginx.test.
 
-### PHP
-* `php -S localhost:<port>`
-
 ### Using NGINX as a load balancer
 * A load balancer is a software application or device that distributes incoming network traffic across a group of backend servers, ensuring that no single server is overwhelmed by traffic. 
 * Distribution is usually based on some predefined algorithm (round robin, least connections, IP hash, etc)
@@ -852,161 +757,111 @@ http {
 }
 ```
 
-### Optimizing NGINX for maximum performance
-**Configuring worker processes and worker connections**
-* nginx can spawn multiple worker processes capable of handling thousands of requests each
-* `sudo systemctl status nginx` - will telll you how many worker processes you have
-* use `worker_process` directive in the `main` context to set number of worker processes to spawn
-
-```
-worker_processes 2;
-
-events {
-
-}
-
-http {
-
-    server {
-
-        listen 80;
-        server_name nginx-handbook.test;
-
-        return 200 "worker processes and worker connections configuration!\n";
-    }
-}
-```
-* worker processes are asynchronous
-* generally, the optimal number of worker processes should be equal to number of CPU cores
-	* use `nproc` command to figure out how many cpus are on server in Linux
-* in the case of changing CPU numbers, set `worker_processes auto`
-* worker connection is how many connections a single worker process can handle
-* to find the number of files operating system allows to open per core, use `ulimit -n` command in linux
-* use `worker_connections` directive to configure the worker connections
-
-```
-worker_processes auto;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-
-    server {
-
-        listen 80;
-        server_name nginx-handbook.test;
-
-        return 200 "worker processes and worker connections configuration!\n";
-    }
-}
-```
-
-**Caching static content**
-* caching is the process of storing copies of files or data in a temporary storage so that they can be quicly accessed when needed. It reduces the time needed to fetch resources that are frequently requested
-* Static content are files that don't change frequently such as images, CSS files, Javascript files, and html files  
-
-Example:
-```
-worker_processes auto;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-
-    include /env/nginx/mime.types;
-
-    server {
-
-        listen 80;
-        server_name nginx-handbook.test;
-
-        root /srv/nginx-handbook-demo/static-demo;
-        
-        location ~* \.(css|js|jpg)$ {
-            access_log off;
-            
-            add_header Cache-Control public;
-            add_header Pragma public;
-            add_header Vary Accept-Encoding;
-            expires 1M;
-        }
-    }
-}
-```
-* `location ~* \.(css|js|jpg)$` tells nginx to match requests asking for a file ending with .css, .js, and .jpg
-* use `add_header` directive to include a header in the response to the client
-	* headers are additional pieces of information that are sent along with a request or response in HTTP messages. They provide metadata about the message and can be used to pass info between client (like web browser) and server
-		* content negotiation - `Content-Type` and `Content-Encoding` tells client about the type and encoding of content being sent
-		* caching - `Cache-Control` and `Expires` tells client how long response can be cached
-		* authentication - `WWW-Authenticate` and `Authorization` are used to implement authentication and authorization mechanisms, allowing server to control access to resources
-		* redirects - `Location` redirect client to a different URL
-		* cookies - `Set-Cookie` sets cookies in client's browser and used for session management or track user behavior
-		* compression - `Content-Encoding` indicates that response is compressed, reducing the amount of data that needs to be transferred over the network
-	* in the example:
-		* `Cache-Control public` - content can be cached in any way
-		* `Pragma public` - older version of cache-control
-		* `Vary Accept-Encoding` - cached content may vary depending on the content encoding accepted by the client
-		* `expires` directive - set the `Expires` header to `1M` (1 month) `10m` is 10 minutes. `24h` is 24 hours  
-
-**Compress Responses**  
-* compression reduces the size of the response data before sending it over the network
-* client must decompress the data before using the contents  
-Example:  
-```
-
-worker_processes auto;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /env/nginx/mime.types;
-
-    gzip on;
-    gzip_comp_level 3;
-
-    gzip_types text/css text/javascript;
-
-    server {
-
-        listen 80;
-        server_name nginx-handbook.test;
-
-        root /srv/nginx-handbook-demo/static-demo;
-        
-        location ~* \.(css|js|jpg)$ {
-            access_log off;
-            
-            add_header Cache-Control public;
-            add_header Pragma public;
-            add_header Vary Accept-Encoding;
-            expires 1M;
-        }
-    }
-}
-```
-
-* GZIP is a popular file format used by apps for file compression and decompression
-* use `gzip` directives to manage GZIP files
-* `gzip on;` - tells nginx to compress responses
-* `gzip_comp_level 3;` - set level of compression (1-4 generally efficient enough)
-* `gzip_types text/css text/javascript;` - by default, NGINX will compress HTML responses. Pass any other files you want to compress to `gzip_types`
-* with compression, the client has to ask for the compressed response. The `add_header Vary Accept-Encoding;` line lets the client know that the response may vary based on what client accepts.
-	* to request uncompressed mini.min.css file: `curl -I http://nginx-handbook.test/mini.min.css`
-	* to request compressed mini.min.css file: `curl -I -H "Accept-Encoding: gzip" http://nginx-handbook.test/mini.min.css`
-	* use `ls -lh` to see the size of each file
-
 ## Configuring SSL
 * an SSL certificate allows a server to move from HTTP to HTTPS
 * issued by a certificate authority (CA)
 * some nonprofit authorities will issue certificates for free (like Let's encrypt)
 
+# VM Setup
 
+## Create VM
+* Click New
+* Name machine
+* Change folder to goinfre
+* Select iso image (in my case it is Debian 11.9.0-AMD-64)
+* Click next
+* Change username and password
+* Click next and keep all default settings
+
+## Set up port forwarding networks
+* Settings -> Network -> Advanced -> Port forwarding -> add the following:
+* 2222(host port) -> 22(guest port) (use this config at 42, since port 22 is in use)
+* 22 -> 22 (use this config on home laptop)
+* 443 -> 443 (for https)
+* 80 -> 80 (for http)
+* BONUS
+
+## Set up user
+**Go to root**
+* su
+* enter password  
+
+**Add user to sudo**
+* sudo usermod -aG sudo <user>  
+
+**Add user to sudoers**
+* sudo visudo
+* under user privilege specification, add same rule as root, except with username  
+    root    ALL=(ALL:ALL) ALL  
+    hbui-vu ALL=(ALL:ALL) ALL  
+* ctrl+x -> y -> enter
+
+## Install SSH 
+* sudo apt update
+* sudo apt install openssh-server
+
+**Check SSH is running**
+* sudo systemctl status ssh (can replace status with stop, restart, start)
+**Check SSH works from local computer** 
+* From local computer "ssh -p <port> user@localhost
+**Troubleshooting**
+* If you get this messge: WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! -> This is because you changed computers and there are conflicts with the known_hosts file
+* Go to the folder specified in the error message (in my case it is: /Users/hbui-vu/.ssh/known_hosts)
+* Delete the old host keys (everything EXCEPT the github key)
+* SSH again
+
+## 
+Basic Commands
+Go to root
+    su
+To see groups:
+    getent group <groupname>
+To add user to a group
+    sudo usermod -aG <group> <username>
+To install
+    sudo apt update
+    sudo apt install <package>
+    
+* 
+    
+
+* install docker
+    sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt update
+    sudo apt install docker-ce docker-ce-cli containerd.io
+    sudo docker run hello-world
+* install docker compose
+    sudo apt install docker-compose-plugin
+    or
+    sudo apt update
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    docker-compose --version
+* add user to docker group
+    sudo usermod -aG docker <user>
+* set up shared folder
+    Devices->insert guest additions cd image
+
+    -> we have to move cdrom somewhere to be able to execute the vboxlinuxadditions
+    sudo mkdir -p /mnt/cdrom
+    sudo umount /media/cdrom0
+    sudo mount /dev/sr0 /mnt/cdrom
+    ls /mnt/cdrom
+    sudo ./VBoxLinuxAdditions.run
+
+    sudo usermod -aG vboxsf <user>
+
+    Settings -> shared folder -> pick folder -> automount and permanent
+* set up hosts folder
+    sudo nano etc/hosts
+    add 127.0.0.1 hbui-vu.42.fr
+    ctrl+x -> y -> enter
+* create data folder
+    sudo mkdir /home/hbui-vu/data
+* reboot
+    sudo reboot
 
 # Other notes	
 * CVb3d2023
@@ -1068,72 +923,7 @@ SELECT * FROM <TABLE>;
 SELECT column1, column2 FROM <TABLE>;
 SELECT * FROM my_table WHERE column1 = 'some_value';
 
-VM SETUP
-Set up port forwarding networks
-22->22
-at 42, do 2222 and 22, since using port 22 on the mac does not work
-443->443
-8080->80
 
-Basic Commands
-Go to root
-    su
-To see groups:
-    getent group <groupname>
-To add user to a group
-    sudo usermod -aG <group> <username>
-To install
-    sudo apt update
-    sudo apt install <package>
-
-* Add user to sudo 
-    sudo usermod -aG sudo <user>
-* add user to sudoers
-    sudo visudo
-    under user privilege specification, add same rule as root, except with username
-    root    ALL=(ALL:ALL) ALL
-    hbui-vu ALL=(ALL:ALL) ALL
-* install ssh
-    sudo apt update
-    sudo apt install openssh-server
-    sudo systemctl status ssh (can replace status with stop, restart, start)
-* install docker
-    sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
-    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt update
-    sudo apt install docker-ce docker-ce-cli containerd.io
-    sudo docker run hello-world
-* install docker compose
-    sudo apt install docker-compose-plugin
-    or
-    sudo apt update
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    docker-compose --version
-* add user to docker group
-    sudo usermod -aG docker <user>
-* set up shared folder
-    Devices->insert guest additions cd image
-
-    -> we have to move cdrom somewhere to be able to execute the vboxlinuxadditions
-    sudo mkdir -p /mnt/cdrom
-    sudo umount /media/cdrom0
-    sudo mount /dev/sr0 /mnt/cdrom
-    ls /mnt/cdrom
-    sudo ./VBoxLinuxAdditions.run
-
-    sudo usermod -aG vboxsf <user>
-
-    Settings -> shared folder -> pick folder -> automount and permanent
-* set up hosts folder
-    sudo nano etc/hosts
-    add 127.0.0.1 hbui-vu.42.fr
-    ctrl+x -> y -> enter
-* create data folder
-    sudo mkdir /home/hbui-vu/data
-* reboot
-    sudo reboot
 
 https://localhost/wp-admin -> goes to admin page
 

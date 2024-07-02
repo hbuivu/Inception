@@ -10,6 +10,8 @@ RUN apk add --no-cache \
 COPY tools/config.sh /scripts/config.sh
 # COPY tools/default.conf /etc/nginx/http.d/default.conf
 
+RUN chmod +x /scripts/config.sh
+
 ENV PMA_HOST=mariadb PMA_USER=hbui-vu PMA_PASSWORD=hbui-vu
 
 EXPOSE 8081
