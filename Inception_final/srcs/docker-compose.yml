@@ -1,0 +1,111 @@
+services:
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    volumes:
+      - wpvol:/var/www/html/wordpress
+      - phpvol:/usr/share/webapps/phpmyadmin
+    networks:
+      - inception
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+    restart: always
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress
+    volumes:
+      - wpvol:/var/www/html/wordpress
+    env_file:
+      - .env
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+      - redis
+      - adminer
+    restart: always
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    volumes: 
+      - dbvol:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - inception
+    restart: always
+  redis:
+    container_name: redis
+    build: ./requirements/bonus/redis
+    networks:
+      - inception
+    restart: always
+  ftp:
+    container_name: ftp
+    build: ./requirements/bonus/ftp
+    volumes:
+      - wpvol:/home/www-data/ftp/uploads
+    env_file:
+      - .env
+    networks:
+      - inception
+    depends_on:
+      - nginx
+    ports:
+      - "20:20"
+      - "21:21"
+      - "40000-40100:40000-40100"
+    restart: always
+  site:
+    container_name: site
+    build: ./requirements/bonus/site
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: always
+  adminer:
+    container_name: adminer
+    build: ./requirements/bonus/adminer
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: always
+  phpmyadmin:
+    container_name: phpmyadmin
+    build: ./requirements/bonus/phpmyadmin
+    volumes:
+      - phpvol:/usr/share/webapps/phpmyadmin
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    restart: always
+volumes:
+  wpvol:
+    name: wpvol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/wp
+      o: bind
+  dbvol:
+    name: dbvol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/db
+      o: bind
+  phpvol:
+    name: phpvol
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/hbui-vu/data/php
+      o: bind
+networks:
+  inception:
+    driver: bridge

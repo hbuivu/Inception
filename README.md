@@ -865,8 +865,14 @@ http {
 
 ## FTP Server
 * Check config.sh. We created an uploads folder specifically for uploads that the user has access to chroot enable means that during login, the user is confined to the home folder (/home/user/ftp) Therefore, we only need to use the relative path only (/uploads)
+**Upload files**  
 * curl -T local_filename ftp://username:password@servername:mapped_port/uploads_folder/filename
 * curl -T testfile.txt ftp://hbui-vu:hbui-vu@localhost:21/uploads/testfile.txt
+* curl -T testfile.txt ftp://vsftp:hbui-vu@localhost:21/uploads/testfile.txt
+**Download files**  
+* curl ftp://username:password@ftp.example.com/path/to/file -o local_filename
+
+
 
 
 # Other notes	
@@ -938,8 +944,6 @@ phpmyadmin
 UPLOAD files:
 
 
-DOWNLOAD files:
-curl -u username:password ftp://ftp.example.com/path/to/file -o local_filename
 
 List Directory Contents:
 curl -u username:password ftp://ftp.example.com/path/to/directory/
