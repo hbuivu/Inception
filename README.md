@@ -763,7 +763,6 @@ http {
 * some nonprofit authorities will issue certificates for free (like Let's encrypt)
 
 # VM Setup
-
 ## Create VM
 * Click New
 * Name machine
@@ -785,10 +784,8 @@ http {
 **Go to root**
 * su
 * enter password  
-
 **Add user to sudo**
 * sudo usermod -aG sudo <user>  
-
 **Add user to sudoers**
 * sudo visudo
 * under user privilege specification, add same rule as root, except with username  
@@ -810,58 +807,67 @@ http {
 * Delete the old host keys (everything EXCEPT the github key)
 * SSH again
 
-## 
-Basic Commands
-Go to root
-    su
-To see groups:
-    getent group <groupname>
-To add user to a group
-    sudo usermod -aG <group> <username>
-To install
-    sudo apt update
-    sudo apt install <package>
+## Install Docker and Docker Compose
+**Docker**  
+* sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
+* curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+* echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+* sudo apt update
+* sudo apt install docker-ce docker-ce-cli containerd.io
+* sudo docker run hello-world
+**Docker Compose**  
+* sudo apt update
+* sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+* sudo chmod +x /usr/local/bin/docker-compose
+* docker-compose --version
+**Add user to Docker group**
+* sudo usermod -aG docker <user>
+
+## Set up shared folder
+* Devices->insert guest additions cd image
+* we have to move cdrom somewhere to be able to execute the vboxlinuxadditions
+    * sudo mkdir -p /mnt/cdrom
+    * sudo umount /media/cdrom0
+    * sudo mount /dev/sr0 /mnt/cdrom
+    * cd /mnt/cdrom
+    * sudo ./VBoxLinuxAdditions.run
+* sudo usermod -aG vboxsf <user>
+* Settings -> shared folder -> pick folder -> automount and permanent
+
+## Set up host
+* sudo nano etc/hosts
+* add 127.0.0.1 hbui-vu.42.fr
+* ctrl+x -> y -> enter
+
+## Create data folder (optional)
+* mkdir /home/<user>/data/<wp, db, php, etc...>
+
+## Reboot the system for everything to take effect
+* sudo reboot
+
+## Basic commands
+* Go to root: su
+* To see groups: getent group <groupname>
+* To add user to a group: sudo usermod -aG <group> <username>
+* To install: sudo apt update / sudo apt install <package>
     
-* 
-    
+# Testing
+## Docker
 
-* install docker
-    sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
-    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt update
-    sudo apt install docker-ce docker-ce-cli containerd.io
-    sudo docker run hello-world
-* install docker compose
-    sudo apt install docker-compose-plugin
-    or
-    sudo apt update
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    docker-compose --version
-* add user to docker group
-    sudo usermod -aG docker <user>
-* set up shared folder
-    Devices->insert guest additions cd image
+## MariaDB
+* login: mysql -u root -p
+* SHOW DATABASES;
+* SHOW TABLES IN <DATABASE>;
+* USE <DATABASE>;
+* SELECT * FROM <TABLE>;
+* SELECT column1, column2 FROM <TABLE>;
+* SELECT * FROM my_table WHERE column1 = 'some_value';
 
-    -> we have to move cdrom somewhere to be able to execute the vboxlinuxadditions
-    sudo mkdir -p /mnt/cdrom
-    sudo umount /media/cdrom0
-    sudo mount /dev/sr0 /mnt/cdrom
-    ls /mnt/cdrom
-    sudo ./VBoxLinuxAdditions.run
+## FTP Server
+* Check config.sh. We created an uploads folder specifically for uploads that the user has access to chroot enable means that during login, the user is confined to the home folder (/home/user/ftp) Therefore, we only need to use the relative path only (/uploads)
+* curl -T local_filename ftp://username:password@servername:mapped_port/uploads_folder/filename
+* curl -T testfile.txt ftp://hbui-vu:hbui-vu@localhost:21/uploads/testfile.txt
 
-    sudo usermod -aG vboxsf <user>
-
-    Settings -> shared folder -> pick folder -> automount and permanent
-* set up hosts folder
-    sudo nano etc/hosts
-    add 127.0.0.1 hbui-vu.42.fr
-    ctrl+x -> y -> enter
-* create data folder
-    sudo mkdir /home/hbui-vu/data
-* reboot
-    sudo reboot
 
 # Other notes	
 * CVb3d2023
@@ -913,15 +919,6 @@ https://forums.docker.com/t/can-i-access-wordpress-with-http-localhost-9000/1405
 
 docker run -d -p 80:80 --name ngtest ngtest
 
-MARIADB
-mysql -u root -p
-SHOW DATABASES;
-SHOW TABLES IN <DATABASE>;
-USE <DATABASE>;
-SELECT * FROM <TABLE>;
-
-SELECT column1, column2 FROM <TABLE>;
-SELECT * FROM my_table WHERE column1 = 'some_value';
 
 
 
@@ -939,10 +936,7 @@ phpmyadmin
 -similar to adminer but more indepth and designed specifically for mySql
 
 UPLOAD files:
-curl -T local_filename ftp://username:password@servername:mapped_port/uploads_folder/filename
-Check config.sh. We created an uploads folder specifically for uploads that the user has access to
-chroot enable means that during login, the user is confined to the home folder (/home/user/ftp) Therefore, we only need to use the relative path only (/uploads)
-curl -T testfile.txt ftp://hbui-vu:hbui-vu@localhost:21/uploads/testfile.txt
+
 
 DOWNLOAD files:
 curl -u username:password ftp://ftp.example.com/path/to/file -o local_filename

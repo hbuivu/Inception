@@ -3,9 +3,8 @@ FROM alpine:3.18.0
 RUN apk add --no-cache \
 	vsftpd \ 
 	openrc \
-	inotify-tools
+	shadow
 	
-
 COPY tools/config.sh /scripts/config.sh
 
 RUN chmod +x /scripts/config.sh

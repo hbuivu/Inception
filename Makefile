@@ -1,6 +1,7 @@
 NAME = inception
 
-all: volume build up
+all: volume up
+# all: up
 
 volume: 
 	mkdir -p ~/data
@@ -8,11 +9,8 @@ volume:
 	mkdir -p ~/data/db
 	mkdir -p ~/data/php
 
-build:
-	@docker-compose -f  ./srcs/docker-compose.yml build --pull 
-
 up:
-	@docker-compose -f ./srcs/docker-compose.yml up -d
+	@docker-compose -f ./srcs/docker-compose.yml up --build -d 
 
 down:
 	@docker-compose -f ./srcs/docker-compose.yml down
@@ -36,3 +34,6 @@ fclean: clean
 	sudo rm -rf ~/data/php/* 
 
 re: fclean up
+
+# build:
+# @docker-compose -f  ./srcs/docker-compose.yml build --pull 
