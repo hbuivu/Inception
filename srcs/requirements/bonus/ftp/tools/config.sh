@@ -37,3 +37,8 @@ if [ ! -f /etc/vsftpd/vsftpd.conf.bak ]; then
 fi
 
 /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
+
+#NOTES:
+#For some reason, the ownership of uploads folder is always set to vsftp:www-data. 
+#This user and group is already created
+#We simply need to add vsftp to www-data group, add password, and vsftp to known vsftp userlist
